@@ -9,11 +9,11 @@ Using the functions from this package end user can write R code to automate the 
 If you encounter a problem or have suggestions, feel free to open an issue.
 
 # Installation
+
 `devtools::install_github("Omni-Analytics-Group/RnumeraiAPI")`
 
-
-
 # Automatic submission using this package
+
 ### 1. Install and load the package.
 
 -    `devtools::install_github("Omni-Analytics-Group/RnumeraiAPI")`
@@ -35,15 +35,15 @@ If you encounter a problem or have suggestions, feel free to open an issue.
 
 ### 3. Set Public Key and Secret API key variables.
 
-Get your public key and api key by going to numer.ai and then going to `Custom API Keys` section under your `Account` Tab. Select appropriate scopes to generate the key or select all scopes to use full functionality of this package.
+Get your public key and api key by going to numer.ai and then going to `Custom API Keys` section under your `Account` Tab. Select appropriate scopes to generate the key or select all scopes to use the full functionality of this package.
 
 -   `set_public_id("public_id_here")`
 -   `set_api_key("api_key_here")`
 -   `set_password("password_here")`
 
-Optional: If we choose not to setup the credentials here the terminal will interactibely prompt us to type the values when we make an API call.
+Optional: If we choose not to setup the credentials here the terminal will interactively prompt us to type the values when we make an API call.
 
-### 4. Download data set for current tournament and split it into training data and tournament data 
+### 4. Download data set for the current tournament and split it into training data and tournament data 
 
 -    `data <- download_data(data_dir)`
 -    `data_train <- data$data_train`
@@ -51,7 +51,7 @@ Optional: If we choose not to setup the credentials here the terminal will inter
 
 ### 5. Generate predictions
 
-User can put his own custom model code to generate the predictions here. For demonstration purpose we will generate random predictions here.
+A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
 
 -   `submission <- data.frame(id=data_tournament$id,probability = sample(seq(.3,.8,by=.1),nrow(data_tournament),replace=TRUE))`
 
@@ -64,15 +64,15 @@ User can put his own custom model code to generate the predictions here. For dem
 -   `Sys.sleep(10)      ## 10 Seconds wait period`
 -   `status_submission_by_id(submission_id)`
     
-### 8. Stake submission on submission made above and get transaction hash for same.
+### 8. Stake submission on submission made above and get transaction hash for it.
 
 -   `stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")`
 -   `stake_tx_hash`
-    
-
 
 # Additional functions
+
 ### 1. Get User information
+
 -   `uinfo <- user_info()`
 -   `names(uinfo)`
 -   `uinfo$Latest_Submission`

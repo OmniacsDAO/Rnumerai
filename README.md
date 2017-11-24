@@ -14,9 +14,10 @@ If you encounter a problem or have suggestions, feel free to open an issue.
 
 
 # Automatic submission using this package
-### 1. Install the package.
+### 1. Install and load the package.
 
 -    `devtools::install_github("Omni-Analytics-Group/RnumeraiAPI")`
+-    `library(RnumeraiAPI)`
 
 ### 2. Set working directory where data will be downloaded and submission files would be kept.
 

@@ -1,4 +1,4 @@
-<img src="man/figures/OAG_CLR_web_small.png" align="right" />
+<a href="https://omnianalytics.io" target="_blank"><img src="man/figures/OAG_CLR_web_small.png" align="right"/></a>
 
 # RnumeraiAPI 
 > R Interface to the Numerai Machine Learning Tournament API

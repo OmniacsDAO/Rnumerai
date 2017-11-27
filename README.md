@@ -77,7 +77,7 @@ A user can put his/her own custom model code to generate the predictions here. F
 -   `names(uinfo)`
 -   `uinfo$Latest_Submission`
 
-### 1. Run Custom GraphQL code from R:
+### 2. Run Custom GraphQL code from R:
 
 -   `custom_query <- 'query queryname {
     					rounds (number:82) {

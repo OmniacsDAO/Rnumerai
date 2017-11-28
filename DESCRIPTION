@@ -1,7 +1,7 @@
 Package: RnumeraiAPI
 Title: Interface to the Numerai Machine Learning Tournament API
 Version: 0.1
-Authors@R: person("Omni Analytics Group", email = "admin@omnianalytics.io", role = c("aut", "cre"))
+Authors@R: person("Omni Analytics Group", email = "services@omnianalytics.io", role = c("aut", "cre"))
 Description: Routines to interact with the Numerai Machine Learning Tournament
   API. The functionality includes the ability to automatically download the
   current tournament data, submit predictions, and to get information for your

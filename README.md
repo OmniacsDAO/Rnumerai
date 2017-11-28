@@ -39,7 +39,6 @@ Get your public key and api key by going to numer.ai and then going to `Custom A
 
 -   `set_public_id("public_id_here")`
 -   `set_api_key("api_key_here")`
--   `set_password("password_here")`
 
 Optional: If we choose not to setup the credentials here the terminal will interactively prompt us to type the values when we make an API call.
 
@@ -87,7 +86,12 @@ Get leaderboard information for a given round number (Round 51 & Above).
 -   `round_info$round_info`
 -   `round_info$round_leaderboard`
 
-### 3. Run Custom GraphQL code from R:
+### 3. Get current open round
+Get closing time and round number for current open round
+
+-   `current_round()`
+
+### 4. Run Custom GraphQL code from R:
 
 -   `custom_query <- 'query queryname {
     					rounds (number:82) {

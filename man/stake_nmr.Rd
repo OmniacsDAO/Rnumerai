@@ -4,7 +4,7 @@
 \alias{stake_nmr}
 \title{Stake NMR on the current round}
 \usage{
-stake_nmr(value, confidence, mfa_code = "", password = get_password())
+stake_nmr(value, confidence, mfa_code = "", password = "")
 }
 \arguments{
 \item{value}{The amount of NMR to stake}

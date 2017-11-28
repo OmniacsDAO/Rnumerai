@@ -488,6 +488,27 @@ user_info <- function()
 	return(result)
 }
 
+#' Get current round and it's closing time
+#'
+#' @name current_round
+#' @return Returns the current round number and it's closing times
+#' @export
+#' @examples
+#' \dontrun{
+#' current_round
+current_round <- function()
+{
+	current_round = 'query current_round {
+						rounds(number:0) {
+							number
+							closeTime
+							closeStakingTime
+						}
+					}'
+	query_pass <- run_query(query=current_round)
+	return(c(Round_Number=query_pass$data$rounds[[1]]$number,Close_Time=query_pass$data$rounds[[1]]$closeTime,Close_Staking_Time=query_pass$data$rounds[[1]]$closeStakingTime))
+}
+
 #' Stake NMR on the current round
 #'
 #' @name stake_nmr
@@ -501,22 +522,15 @@ user_info <- function()
 #' \dontrun{
 #' stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")
 #' }
-stake_nmr <- function(value, confidence, mfa_code = "", password = get_password())
+stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 {
-	get_round_query = 'query get_round_query {
-							rounds {
-								number
-							}
-						}'
-	query_pass <- run_query(query=get_round_query)
-
 	stake_query <- paste0(
 							'mutation stake_query {
 								stake(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
 								confidence:"',confidence,'"
-								round:',max(unlist(query_pass)),'
+								round:',as.numeric(current_round()["Round_Number"]),'
 								){
 									txHash
 								}}'

@@ -495,7 +495,8 @@ user_info <- function()
 #' @export
 #' @examples
 #' \dontrun{
-#' current_round
+#' current_round()
+#' }
 current_round <- function()
 {
 	current_round = 'query current_round {

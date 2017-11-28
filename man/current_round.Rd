@@ -12,3 +12,8 @@ Returns the current round number and it's closing times
 \description{
 Get current round and it's closing time
 }
+\examples{
+\dontrun{
+current_round()
+}
+}

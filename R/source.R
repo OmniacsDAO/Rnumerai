@@ -524,3 +524,79 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = get_password(
 	query_pass <- run_query(query=stake_query)
 	return(query_pass)
 }
+
+#' Get Information and leader board for a Round Number
+#'
+#' @name round_stats
+#' @param round_number Round Number for which information to fetch
+#' @return List containing general round information and leaderboard
+#' @export
+#' @examples
+#' \dontrun{
+#' round_info <- round_stats(round_number=79)
+#' round_info$round_info
+#' round_info$round_leaderboard
+round_stats <- function(round_number)
+{
+	round_stats_query <- paste0(
+									'query round_stats_query {
+									rounds(number:',round_number,'){
+										number
+										openTime
+										resolvedGeneral
+										resolvedStaking
+										closeTime
+										closeStakingTime
+										leaderboard {
+											username
+											validationLogloss
+											consistency
+											liveLogloss
+											paymentGeneral {
+												nmrAmount
+												usdAmount
+      										}
+											stake {
+												confidence
+												value
+											}
+											stakeResolution {
+												successful
+												destroyed
+												paid
+											}
+										}
+									}}'
+								)
+	query_pass <- run_query(query=round_stats_query)
+
+	round_data <- query_pass$data$rounds[[1]]
+	result_info <- data.frame(
+								Round_Number = round_data$number,
+								Open_Time = round_data$openTime,
+								Close_Time = round_data$closeTime,
+								Close_Staking_Time = round_data$closeStakingTime,
+								If_Resolved = round_data$resolvedGeneral
+  							)
+	round_lb <- query_pass$data$rounds[[1]]$leaderboard
+	result_leaderboard <- data.frame(
+										Username = sapply(round_lb,function(x) x$username),
+										Live_Logloss = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveLogloss),0,x$liveLogloss))),
+										Validation_Logloss = sapply(round_lb,function(x) x$validationLogloss),
+										Consistency = sapply(round_lb,function(x) x$consistency),
+										Paid_USD = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$usdAmount),0,x$paymentGeneral$usdAmount))),
+										Paid_NMR = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$nmrAmount),0,x$paymentGeneral$nmrAmount))),
+										Stake_Amount = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stake$value),0,x$stake$value))),
+										Stake_Confidence = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stake$confidence),NA,x$stake$confidence))),
+										Stake_Success = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$successful),NA,x$stakeResolution$successful)),
+										Stake_Destroyed = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$destroyed),NA,x$stakeResolution$destroyed)),
+										Stake_Paid = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$paid),0,x$stakeResolution$paid)))
+									)
+	return(list(round_info = result_info , round_leaderboard = result_leaderboard))
+}
+
+
+
+
+
+

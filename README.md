@@ -73,11 +73,21 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 ### 1. Get User information
 
+Get user information for the user whose API key and ID are entered, Check out the name of the return object to see what informations are included in the return and than subset the required information
+
 -   `uinfo <- user_info()`
+-   `uinfo`
 -   `names(uinfo)`
 -   `uinfo$Latest_Submission`
 
-### 2. Run Custom GraphQL code from R:
+### 2. Get leaderboard for a round
+Get leaderboard information for a given round number (Round 51 & Above).
+
+-   `round_info <- round_stats(round_number=79)`
+-   `round_info$round_info`
+-   `round_info$round_leaderboard`
+
+### 3. Run Custom GraphQL code from R:
 
 -   `custom_query <- 'query queryname {
     					rounds (number:82) {

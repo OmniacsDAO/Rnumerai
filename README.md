@@ -1,6 +1,6 @@
 <a href="https://omnianalytics.io" target="_blank"><img src="man/figures/OAG_CLR_web_small.png" align="right"/></a>
 
-# RnumeraiAPI 
+# Rnumerai 
 > R Interface to the Numerai Machine Learning Tournament API
 
 This interface allows download of tournament data, submit predictions, get user information, stake NMR's and much more.
@@ -10,14 +10,14 @@ If you encounter a problem or have suggestions, feel free to open an issue.
 
 # Installation
 
-`devtools::install_github("Omni-Analytics-Group/RnumeraiAPI")`
+`devtools::install_github("Omni-Analytics-Group/Rnumerai")`
 
 # Automatic submission using this package
 
 ### 1. Install and load the package.
 
--    `devtools::install_github("Omni-Analytics-Group/RnumeraiAPI")`
--    `library(RnumeraiAPI)`
+-    `devtools::install_github("Omni-Analytics-Group/Rnumerai")`
+-    `library(Rnumerai)`
 
 ### 2. Set working directory where data will be downloaded and submission files would be kept.
 

@@ -1,4 +1,4 @@
-Package: RnumeraiAPI
+Package: Rnumerai
 Title: Interface to the Numerai Machine Learning Tournament API
 Version: 0.1
 Authors@R: person("Omni Analytics Group", email = "services@omnianalytics.io", role = c("aut", "cre"))
@@ -10,8 +10,8 @@ Depends: R (>= 3.1)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/Omni-Analytics-Group/RnumeraiAPI
-BugReports: https://github.com/Omni-Analytics-Group/RnumeraiAPI/issues
+URL: https://github.com/Omni-Analytics-Group/Rnumerai
+BugReports: https://github.com/Omni-Analytics-Group/Rnumerai/issues
 RoxygenNote: 6.0.1
 Imports:
   httr,

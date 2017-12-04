@@ -551,6 +551,7 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 #' round_info <- round_stats(round_number=79)
 #' round_info$round_info
 #' round_info$round_leaderboard
+#' }
 round_stats <- function(round_number)
 {
 	round_stats_query <- paste0(

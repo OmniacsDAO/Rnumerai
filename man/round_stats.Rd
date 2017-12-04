@@ -15,3 +15,10 @@ List containing general round information and leaderboard
 \description{
 Get Information and leader board for a Round Number
 }
+\examples{
+\dontrun{
+round_info <- round_stats(round_number=79)
+round_info$round_info
+round_info$round_leaderboard
+}
+}

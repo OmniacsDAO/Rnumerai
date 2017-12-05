@@ -197,14 +197,14 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' \dontrun{
 #' ## Directory where data files and prediction files to be saved
 #' ## Put custom directory path or use the current working directory
-#' data_dir <- getwd()
+#' data_dir <- tempdir()
 #'
 #' ## Download data set for current competition
 #' data <- download_data(data_dir)
 #' data_train <- data$data_train
 #' data_tournament <- data$data_tournament
 #' }
-download_data <- function(location = getwd())
+download_data <- function(location = tempdir())
 {
 	## Get download link
 	download_link_query <- '{dataset}'
@@ -240,7 +240,7 @@ download_data <- function(location = getwd())
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data)
 #' }
-submit_predictions <- function(submission, location = getwd())
+submit_predictions <- function(submission, location = tempdir())
 {
 	## Write out the file
 	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))
@@ -551,6 +551,7 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 #' round_info <- round_stats(round_number=79)
 #' round_info$round_info
 #' round_info$round_leaderboard
+#' }
 round_stats <- function(round_number)
 {
 	round_stats_query <- paste0(

@@ -1,11 +1,13 @@
 Package: Rnumerai
 Title: Interface to the Numerai Machine Learning Tournament API
 Version: 0.1
-Authors@R: person("Omni Analytics Group", email = "services@omnianalytics.io", role = c("aut", "cre"))
+Authors@R: c(
+    person("Omni Analytics Group", email = "services@omnianalytics.io", role = "aut"),
+    person("Eric Hare", email = "eric@omnianalytics.io", role = "cre"))
 Description: Routines to interact with the Numerai Machine Learning Tournament
-  API. The functionality includes the ability to automatically download the
+  API <https://numer.ai>. The functionality includes the ability to automatically download the
   current tournament data, submit predictions, and to get information for your
-  user. General GraphQL queries can also be executed.
+  user. General 'GraphQL' queries can also be executed.
 Depends: R (>= 3.1)
 License: GPL-3
 Encoding: UTF-8

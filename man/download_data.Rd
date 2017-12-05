@@ -4,7 +4,7 @@
 \alias{download_data}
 \title{Function to download the Numerai Tournament data}
 \usage{
-download_data(location = getwd())
+download_data(location = tempdir())
 }
 \arguments{
 \item{location}{The directory path in which to store the data}
@@ -19,7 +19,7 @@ Function to download the Numerai Tournament data
 \dontrun{
 ## Directory where data files and prediction files to be saved
 ## Put custom directory path or use the current working directory
-data_dir <- getwd()
+data_dir <- tempdir()
 
 ## Download data set for current competition
 data <- download_data(data_dir)

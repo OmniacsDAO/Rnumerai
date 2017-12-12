@@ -12,14 +12,14 @@ If you encounter a problem or have suggestions, feel free to open an issue.
 
 # Installation
 
-`devtools::install_github("Omni-Analytics-Group/Rnumerai")`
+- For the latest stable release: `install.packages("Rnumerai")`
+- For the latest development release: `devtools::install_github("Omni-Analytics-Group/Rnumerai")`
 
 # Automatic submission using this package
 
-### 1. Install and load the package.
+### 1. Load the package.
 
--    `devtools::install_github("Omni-Analytics-Group/Rnumerai")`
--    `library(Rnumerai)`
+-   `library(Rnumerai)`
 
 ### 2. Set working directory where data will be downloaded and submission files would be kept.
 

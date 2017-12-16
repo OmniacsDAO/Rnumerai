@@ -7,7 +7,7 @@
 submit_predictions(submission, location = tempdir())
 }
 \arguments{
-\item{submission}{The data frame of predictions to submit. This shoudl have two columns named "id" & "probability"}
+\item{submission}{The data frame of predictions to submit. This should have two columns named "id" & "probability"}
 
 \item{location}{The location in which to store the predictions}
 }

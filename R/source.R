@@ -230,7 +230,7 @@ download_data <- function(location = tempdir())
 #' Function to submit the Numerai Tournament predictions
 #'
 #' @name submit_predictions
-#' @param submission The data frame of predictions to submit. This shoudl have two columns named "id" & "probability"
+#' @param submission The data frame of predictions to submit. This should have two columns named "id" & "probability"
 #' @param location The location in which to store the predictions
 #' @return The submission id for the submission made
 #' @export
@@ -263,7 +263,7 @@ submit_predictions <- function(submission, location = tempdir())
 
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
-											'mutation resgister_submission_query {
+											'mutation register_submission_query {
 												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'"){id}
 											}'
 										)

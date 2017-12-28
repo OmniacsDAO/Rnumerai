@@ -591,7 +591,7 @@ round_stats <- function(round_number)
 								Round_Number = round_data$number,
 								Open_Time = round_data$openTime,
 								Close_Time = round_data$closeTime,
-								Close_Staking_Time = round_data$closeStakingTime,
+								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),
 								If_Resolved = round_data$resolvedGeneral
   							)
 	round_lb <- query_pass$data$rounds[[1]]$leaderboard

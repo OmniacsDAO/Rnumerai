@@ -441,29 +441,29 @@ user_info <- function()
 	clean_nmr_deposits <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash")])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash"),drop=FALSE])
 	}
 	clean_nmr_withdrawls <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash")])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash"),drop=FALSE])
 	}
 	clean_usd_withdrawls <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","ethAmount","usdAmount","sendTime","confirmTime","status","id","posted","txHash","userId")])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","ethAmount","usdAmount","sendTime","confirmTime","status","id","posted","txHash","userId"),drop=FALSE])
 	}
 	clean_payments_data <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		payment_data <- as.data.frame(do.call(rbind,lapply(x,unlist))[,c("round.number","nmrAmount","usdAmount","tournament","submission.id","submission.filename")])
+		payment_data <- as.data.frame(do.call(rbind,lapply(x,unlist))[,c("round.number","nmrAmount","usdAmount","tournament","submission.id","submission.filename"),drop=FALSE])
 		names(payment_data) <- c("Round_Number","NMR","USD","Tournament","Submission_ID","Submission_Filename")
 		return(payment_data)
 	}
 	clean_stake_transactions <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("roundNumber","value","soc","confidence","status","insertedAt","staker","txHash")])
+		return(as.data.frame(do.call(rbind,x))[,c("roundNumber","value","soc","confidence","status","insertedAt","staker","txHash"),drop=FALSE])
 	}
 
 	result <- list(

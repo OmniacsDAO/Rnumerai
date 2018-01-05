@@ -565,6 +565,7 @@ round_stats <- function(round_number)
 										closeStakingTime
 										leaderboard {
 											username
+											banned
 											validationLogloss
 											consistency
 											liveLogloss
@@ -597,6 +598,7 @@ round_stats <- function(round_number)
 	round_lb <- query_pass$data$rounds[[1]]$leaderboard
 	result_leaderboard <- data.frame(
 										Username = sapply(round_lb,function(x) x$username),
+										Banned = sapply(round_lb,function(x) x$banned),
 										Live_Logloss = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveLogloss),0,x$liveLogloss))),
 										Validation_Logloss = sapply(round_lb,function(x) x$validationLogloss),
 										Consistency = sapply(round_lb,function(x) x$consistency),

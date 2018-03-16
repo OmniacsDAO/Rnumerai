@@ -573,6 +573,10 @@ round_stats <- function(round_number)
 												nmrAmount
 												usdAmount
       										}
+      										paymentStaking {
+												usdAmount
+												nmrAmount
+											}
 											stake {
 												confidence
 												value
@@ -608,7 +612,10 @@ round_stats <- function(round_number)
 										Stake_Confidence = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stake$confidence),NA,x$stake$confidence))),
 										Stake_Success = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$successful),NA,x$stakeResolution$successful)),
 										Stake_Destroyed = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$destroyed),NA,x$stakeResolution$destroyed)),
-										Stake_Paid = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$paid),0,x$stakeResolution$paid)))
+										Stake_Paid = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$usdAmount),0,x$paymentStaking$usdAmount))),
+										Stake_Paid_NMR = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$nmrAmount),0,x$paymentStaking$nmrAmount))),
+										Paid_USD_Total = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$usdAmount),0,x$paymentGeneral$usdAmount)))+as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$usdAmount),0,x$paymentStaking$usdAmount))),
+										Paid_NMR_Total = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$nmrAmount),0,x$paymentGeneral$nmrAmount)))+as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$nmrAmount),0,x$paymentStaking$nmrAmount)))
 									)
 	return(list(round_info = result_info , round_leaderboard = result_leaderboard))
 }

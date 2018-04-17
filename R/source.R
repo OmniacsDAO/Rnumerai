@@ -207,7 +207,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 download_data <- function(location = tempdir())
 {
 	## Get download link
-	download_link_query <- '{dataset}'
+	download_link_query <- '{dataset(tournament:1)}'
 	query_pass <- run_query(query=download_link_query)
 	download_link <- query_pass$data$dataset
 
@@ -248,7 +248,7 @@ submit_predictions <- function(submission, location = tempdir())
 
 	## Get a slot on AWS for our submission
 	aws_slot_query <- 'query aws_slot_query {
-							submissionUploadAuth (filename : "submission_data.csv"){
+							submissionUploadAuth (filename : "submission_data.csv",tournament:1){
 								filename,
 								url
 							}
@@ -264,7 +264,7 @@ submit_predictions <- function(submission, location = tempdir())
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
-												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'"){id}
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:1){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)
@@ -500,7 +500,7 @@ user_info <- function()
 current_round <- function()
 {
 	current_round = 'query current_round {
-						rounds(number:0) {
+						rounds(number:0,tournament:1) {
 							number
 							closeTime
 							closeStakingTime
@@ -556,7 +556,7 @@ round_stats <- function(round_number)
 {
 	round_stats_query <- paste0(
 									'query round_stats_query {
-									rounds(number:',round_number,'){
+									rounds(number:',round_number,',tournament:1){
 										number
 										openTime
 										resolvedGeneral

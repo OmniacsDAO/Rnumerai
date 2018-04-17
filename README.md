@@ -54,7 +54,7 @@ Optional: If we choose not to setup the credentials here the terminal will inter
 
 A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
 
--   `submission <- data.frame(id=data_tournament$id,probability = sample(seq(.3,.8,by=.1),nrow(data_tournament),replace=TRUE))`
+-   `submission <- data.frame(id=data_tournament$id,probability = sample(seq(.35,.75,by=.1),nrow(data_tournament),replace=TRUE))`
 
 ### 6. Submit predictions and get submission id
 

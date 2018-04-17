@@ -234,6 +234,7 @@ download_data <- function(location = tempdir())
 #' @param location The location in which to store the predictions
 #' @return The submission id for the submission made
 #' @export
+#' @import lubridate
 #' @import httr
 #' @importFrom utils write.csv
 #' @examples
@@ -531,6 +532,7 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 								password:"',password,'"
 								value:"',value,'"
 								confidence:"',confidence,'"
+								tournament :1 
 								round:',as.numeric(current_round()["Round_Number"]),'
 								){
 									txHash

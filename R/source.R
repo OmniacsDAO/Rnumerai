@@ -374,7 +374,6 @@ user_info <- function()
 									from
 									to
 									value
-									id
 									posted
 									source
 									status
@@ -384,7 +383,6 @@ user_info <- function()
 									from
 									to
 									value
-									id
 									posted
 									source
 									status
@@ -442,12 +440,12 @@ user_info <- function()
 	clean_nmr_deposits <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash"),drop=FALSE])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","posted","source","txHash"),drop=FALSE])
 	}
 	clean_nmr_withdrawls <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","id","posted","source","txHash"),drop=FALSE])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","posted","source","txHash"),drop=FALSE])
 	}
 	clean_usd_withdrawls <- function(x)
 	{

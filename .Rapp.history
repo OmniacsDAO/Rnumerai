@@ -1,0 +1,1210 @@
+i
+chart_data[[339]]
+######################################################################
+	## Formatiing Data for better analysis#
+	######################################################################
+	## Defining function to fix d h m s ago data#
+	fix_time <- function(x)#
+	{#
+		x_num <- rev(as.numeric(str_match(strsplit(as.character(x)," ")[[1]],"[[:digit:]]+")))#
+		int_secs <- c(1,60,3600,86400)#
+		return(sum(int_secs[1:length(x_num)]*x_num))#
+	}#
+	## Defining function to get social stats based on stat name#
+	get_social_stat <- function(soc_data,stat)#
+	{#
+		link <- as.character(soc_data$link[soc_data$source_name %in% stat])#
+		if(length(link)==0) return(NA)#
+		return(link)#
+	}#
+	## Masternode Table#
+	bc_stats <- do.call(plyr::rbind.fill,mn_stats_bc)#
+#
+	MN_Table <- data.frame(#
+							Name = str_trim(str_match(mn_table$`Coin / detail`, "(.*?) \\(")[,2]),#
+							Ticker = str_trim(str_match(mn_table$`Coin / detail`, "\\((.*?)\\)")[,2]),#
+							"MN Note" = mn_table$`MN Note`,#
+							Price = as.numeric(gsub("\\$|,","",mn_table$`Price`)),#
+							"Change 24H" = as.numeric(gsub("\\%|,","",mn_table$`Change`)),#
+							"Volume 24H" = as.numeric(gsub("\\$|,","",mn_table$`Volume`)),#
+							Marketcap = as.numeric(gsub("\\$|,","",mn_table$`Marketcap`)),#
+							ROI = as.numeric(gsub("\\%|,","",mn_table$`ROI`)),#
+							"Nodes" = as.numeric(gsub("\\$|,","",mn_table$`Nodes`)),#
+							"MN Tokens" = as.numeric(gsub("\\$|,","",mn_table$`# required`)),#
+							"MN Worth" = as.numeric(gsub("\\$|,","",mn_table$`Mn worth`)),#
+							"Paid Rewards 24H" = as.numeric(gsub("\\$|,","",str_match(bc_stats$`Paid rewards for masternodes`, "(.*?) ")[,2])),#
+							"Reward Frequency" = sapply(bc_stats$`AVG masternode reward frequency`,fix_time),#
+							"Token Supply" = as.numeric(gsub("\\$|,","",str_match(bc_stats$`Supply`, "(.*?) ")[,2])),#
+							#"Token Locked" = as.numeric(gsub("\\$|,","",str_match(bc_stats$`Coins locked`, "(.*?) ")[,2])),#
+							"Token Locked (%)" = as.numeric(gsub("\\%|,","",str_match(bc_stats$`Coins locked`, "\\((.*?)\\)")[,2])),#
+							"Blocks 24H" = as.numeric(gsub("\\$|,","",bc_stats$`Blocks`)),#
+							"Avg Block Time 24H" = sapply(bc_stats$`AVG block time`,fix_time),#
+							"Genesis Block" = as.POSIXct(sapply(strsplit(as.character(bc_stats$`Genesis block`)," / "),"[[",2),"%b %d %Y %H:%M:%S",tz="UTC"),#
+							Blocks = as.numeric(bc_stats$`Last block count`),#
+							"MN Data Update" = as.POSIXct(format(bc_stats$`Scrape Time`,tz="UTC"),tz="UTC")-sapply(str_match(bc_stats$`Last price and masternodes count update`, "(.*?) ago")[,2],fix_time),#
+							"Last Block Time" = as.POSIXct(format(bc_stats$`Scrape Time`,tz="UTC"),tz="UTC")-sapply(str_match(bc_stats$`Last block generated`, "(.*?) ago")[,2],fix_time),#
+							"Scrape Time" = as.POSIXct(format(bc_stats$`Scrape Time`,tz="UTC"),tz="UTC"),#
+							check.names=FALSE,#
+							stringsAsFactors=FALSE#
+						)#
+	## Add Social Data#
+	MN_Table$`Announcement` = sapply(social_data,get_social_stat,stat="Announcement")#
+	MN_Table$`Announcement BB` = sapply(social_data,get_social_stat,stat="BB Announcement")#
+	MN_Table$`Website` = sapply(social_data,get_social_stat,stat="Website")#
+	MN_Table$`Discord` = sapply(social_data,get_social_stat,stat="Discord")#
+	MN_Table$`Explorer` = sapply(social_data,get_social_stat,stat=c("Explorer"))#
+	MN_Table$`Twitter` = sapply(social_data,get_social_stat,stat="Twitter")#
+	MN_Table$`Github` = sapply(social_data,get_social_stat,stat="Github")#
+	MN_Table$`Telegram` = sapply(social_data,get_social_stat,stat="Telegram")#
+	MN_Table$`Slack` = sapply(social_data,get_social_stat,stat="Slack")#
+	MN_Table$`Facebook` = sapply(social_data,get_social_stat,stat="Facebook")#
+	MN_Table$`Reddit` = sapply(social_data,get_social_stat,stat="Reddit")#
+	exchange_lists <- lapply(social_data,get_social_stat,stat=c("Stocks.exchange","Cryptopia","CoinsMarkets","CryptoBridge","Bittrex","CoinExchange","SouthXchange",#
+																"Novaexchange","Crypto Bridge","Graviex.net","CryptoHub","Tradesatoshi","Cfinex","TradeOgre","Crex24","C-CEX","Livecoin","Coinexchange.io","Trade Satoshi","UPbit","CREX24",#
+																"Stocks.Exchange","Coinexchange","Cryptobridge","OutletBit","SouthExchange","Bitcoin Indonesia","Bleutrade",#
+																"BTC-Alpha","C-cex","CoinExchange.io","Mercatox","Poloniex","Stocks Exchange","TradeSatoshi","Binance","HitBTC"#
+																))#
+	MN_Table$`Link Exchanges` = sapply(exchange_lists,function(x){if(is.na(x[1])){return(NA)} ; return(paste0("[ ",x," ]",collapse=" \n "))})#
+	######################################################################
+	######################################################################
+#
+	######################################################################
+	## Add Wealth Distribution Stats if available#
+	######################################################################
+	## Replace some explorer links#
+	MN_Table$Explorer[MN_Table$Ticker=="CHC"] <- "http://104.238.153.140:3001"#
+	MN_Table$Explorer[MN_Table$Ticker=="MXT"] <- "https://be.martexcoin.org"#
+	MN_Table$Explorer[MN_Table$Ticker=="ARC"] <- "http://explorer.arcticcoin.org"#
+#
+	## Scraping info from explorer links mentioned in MNO	#
+	wealth_dist <- list()#
+	for(i in 1:length(MN_Table$`Explorer`))#
+	{#
+		tryCatch({#
+					wealth_dist[[i]] <- get_wealth_dist(MN_Table$`Explorer`[i])#
+				}, error=function(e){#
+										wealth_dist[[i]] <- NA#
+									}#
+				)#
+		#wealth_dist[[i]] <- get_wealth_dist(MN_Table$`Explorer`[i])#
+	}#
+	MN_Table <- cbind(MN_Table,as.data.frame(do.call(rbind,wealth_dist),stringsAsFactors=FALSE))#
+	######################################################################
+	######################################################################
+	######################################################################
+	## Add Wealth Distribution Stats if available from cryptoid#
+	######################################################################
+	## Cryptoid coin list#
+	cryptoid_raw <- fromJSON(readLines("https://chainz.cryptoid.info/explorer/api.dws?q=summary"))#
+	cryptoid_df <- data.frame(Name=sapply(cryptoid_raw,function(x) x$name),Ticker=names(cryptoid_raw))#
+#
+	## Get coins for which we can fetch wealth info from cryptoid#
+	cryptoid_df <- cryptoid_df[toupper(cryptoid_df$Ticker) %in% MN_Table$Ticker,]#
+	cryptoid_df <- cryptoid_df[is.na(MN_Table$`% 1-25`[match(toupper(cryptoid_df$Ticker),MN_Table$Ticker)]),]#
+#
+	## Scraping info from explorer links mentioned in MNO	#
+	wealth_dist_cryptoid <- list()#
+	for(i in 1:length(cryptoid_df$Ticker))#
+	{#
+		tryCatch({#
+					wealth_dist_cryptoid[[i]] <- get_wealth_dist_cryptoid(cryptoid_df$Ticker[i])#
+				}, error=function(e){#
+										wealth_dist_cryptoid[[i]] <- NA#
+									}#
+				)#
+#
+		# for(j in 1:10)#
+		# {#
+		# 	try({#
+		# 			wealth_dist_cryptoid[[i]] <- get_wealth_dist_cryptoid(cryptoid_df$Ticker[i])#
+	 #    			break #break/exit the for-loop#
+	 #  			}, silent = FALSE)#
+		# }#
+	}#
+	MN_Table[match(toupper(cryptoid_df$Ticker),MN_Table$Ticker),c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- as.data.frame(do.call(rbind,wealth_dist_cryptoid))
+## Stakenet#
+	tryCatch({#
+	stakenet_w_t <- fromJSON(content(GET("https://xsnexplorer.io/api/balances?offset=0&limit=100&orderBy=available:desc"),"text"))$data#
+	stakenet_s <- fromJSON(content(GET("https://xsnexplorer.io/api/stats"),"text"))$circulatingSupply#
+	## Create wealth distribution#
+	stakenet_w_d <- c(#
+						"% 1-25" = 100*(sum(stakenet_w_t$available[1:25])/stakenet_s),#
+						"% 26-50" = 100*(sum(stakenet_w_t$available[26:50])/stakenet_s),#
+						"% 51-75" = 100*(sum(stakenet_w_t$available[51:75])/stakenet_s),#
+						"% 76-100" = 100*(sum(stakenet_w_t$available[76:100])/stakenet_s),#
+						"% 101 +" = 100*((stakenet_s-sum(stakenet_w_t$available[1:100]))/stakenet_s)#
+						)#
+	MN_Table[MN_Table$Ticker=="XSN",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(stakenet_w_d))#
+	}, error=function(e){})#
+	######################################################################
+	## Pure
+tryCatch({#
+	pure_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("http://[::ffff:68c8:43ab]:12312/richlist"), useInternalNodes = TRUE))[[3]]$`%`[1:4]))#
+	pure_w_t <- c(pure_w_t,100-sum(pure_w_t))#
+	MN_Table[MN_Table$Ticker=="PURE",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(pure_w_t))#
+	}, error=function(e){})#
+	######################################################################
+	## Bulwark#
+	tryCatch({#
+	bulwark_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("https://altmix.org/coins/10-Bulwark/explorer/richList"), useInternalNodes = TRUE))[[2]]$`%`[1:4]))#
+	bulwark_w_t <- c(bulwark_w_t,100-sum(bulwark_w_t))#
+	MN_Table[MN_Table$Ticker=="BWK",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(bulwark_w_t))#
+	}, error=function(e){})#
+	#####################################################################
+	## Apollon Coin#
+	tryCatch({#
+	appolon_w_t <- readHTMLTable(htmlTreeParse(readLines("https://explorer.apolloncoin.io/distribution"), useInternalNodes = TRUE),skip.rows=1)[[2]]$V6#
+	appolon_w_t <- as.numeric(as.character(gsub("%","",appolon_w_t)))#
+	## Create wealth distribution#
+	appolon_w_d <- c(#
+						"% 1-25" = sum(appolon_w_t[1:25]),#
+						"% 26-50" = sum(appolon_w_t[26:50]),#
+						"% 51-75" = sum(appolon_w_t[51:75]),#
+						"% 76-100" = sum(appolon_w_t[76:100]),#
+						"% 101 +" = 100-sum(appolon_w_t[1:100])#
+						)#
+	MN_Table[MN_Table$Ticker=="XAP",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(appolon_w_d))#
+	}, error=function(e){})
+## Memetic#
+	tryCatch({#
+	memetic_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("http://explorer.memetic.ai/richlist"), useInternalNodes = TRUE))[[3]]$`%`[1:4]))#
+	memetic_w_t <- c(memetic_w_t,100-sum(memetic_w_t))#
+	MN_Table[MN_Table$Ticker=="MEME",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(memetic_w_t))#
+	}, error=function(e){})#
+	######################################################################
+	## Neutron#
+	tryCatch({#
+	neutron_w_t <- readHTMLTable(htmlTreeParse(readLines("http://www.presstab.pw/phpexplorer/NTRN/richlist.php"), useInternalNodes = TRUE))[[1]]$`Supply Owned`#
+	neutron_w_t <- as.numeric(as.character(gsub("%","",neutron_w_t)))#
+	# Create wealth distribution#
+	neutron_w_d <- c(#
+						"% 1-25" = sum(appolon_w_t[1:25]),#
+						"% 26-50" = sum(appolon_w_t[26:50]),#
+						"% 51-75" = sum(appolon_w_t[51:75]),#
+						"% 76-100" = sum(appolon_w_t[76:100]),#
+						"% 101 +" = 100-sum(appolon_w_t[1:100])#
+						)#
+	MN_Table[MN_Table$Ticker=="NTRN",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(neutron_w_d))#
+	}, error=function(e){})#
+	######################################################################
+	## Terracoin#
+	tryCatch({#
+	terracoin_w_t <- readHTMLTable(htmlTreeParse(readLines("https://masternode.terracoin.io/top200.html"), useInternalNodes = TRUE))[[1]]$`TRC`#
+	terracoin_w_t <- as.numeric(as.character(gsub(",","",terracoin_w_t)))#
+	terracoin_s <- MN_Table$`Token Supply`[MN_Table$Ticker=="TRC"]#
+	## Create wealth distribution#
+	terracoin_w_d <- c(#
+						"% 1-25" = 100*(sum(terracoin_w_t[1:25])/terracoin_s),#
+						"% 26-50" = 100*(sum(terracoin_w_t[26:50])/terracoin_s),#
+						"% 51-75" = 100*(sum(terracoin_w_t[51:75])/terracoin_s),#
+						"% 76-100" = 100*(sum(terracoin_w_t[76:100])/terracoin_s),#
+						"% 101 +" = 100*((terracoin_s-sum(terracoin_w_t[1:100]))/terracoin_s)#
+						)#
+	MN_Table[MN_Table$Ticker=="TRC",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(terracoin_w_d))#
+	}, error=function(e){})
+######################################################################
+	## Vsync#
+	tryCatch({#
+	vsync_w_t <- readHTMLTable(htmlTreeParse(readLines("https://blockpioneers.info/chains/vsx/ledger"), useInternalNodes = TRUE))[[1]]$`Balance`#
+	vsync_w_t <- as.numeric(as.character(gsub(",","",vsync_w_t)))#
+	vsync_s <- MN_Table$`Token Supply`[MN_Table$Ticker=="VSX"]#
+	# Create wealth distribution#
+	vsync_w_d <- c(#
+						"% 1-25" = 100*(sum(vsync_w_t[1:25])/vsync_s),#
+						"% 26-50" = 100*(sum(vsync_w_t[26:50])/vsync_s),#
+						"% 51-75" = 100*(sum(vsync_w_t[51:75])/vsync_s),#
+						"% 76-100" = 100*(sum(vsync_w_t[76:100])/vsync_s),#
+						"% 101 +" = 100*((vsync_s-sum(vsync_w_t[1:100]))/vsync_s)#
+						)#
+	MN_Table[MN_Table$Ticker=="VSX",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(vsync_w_d))#
+	}, error=function(e){})#
+	######################################################################
+	## Straks#
+	tryCatch({#
+	straks_w_t <- fromJSON(content(GET("https://api.straks.info/v2/richlist?limit=150"),"text"))$addresses#
+	straks_w_t <- straks_w_t[!grepl("Swap",straks_w_t$label),]#
+	straks_w_t <- straks_w_t[!grepl("Dev",straks_w_t$label),]#
+	straks_s <- MN_Table$`Token Supply`[MN_Table$Ticker=="STAK"]#
+	## Create wealth distribution#
+	straks_w_d <- c(#
+						"% 1-25" = 100*(sum(straks_w_t$balance[1:25])/straks_s),#
+						"% 26-50" = 100*(sum(straks_w_t$balance[26:50])/straks_s),#
+						"% 51-75" = 100*(sum(straks_w_t$balance[51:75])/straks_s),#
+						"% 76-100" = 100*(sum(straks_w_t$balance[76:100])/straks_s),#
+						"% 101 +" = 100*((straks_s-sum(straks_w_t$balance[1:100]))/straks_s)#
+						)#
+	MN_Table[MN_Table$Ticker=="STAK",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(straks_w_d))#
+	}, error=function(e){})
+tryCatch({#
+	digitalprice_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("http://cryptoblock.xyz:30003/richlist"), useInternalNodes = TRUE))[[3]]$`%`[1:4]))#
+	digitalprice_w_t <- c(digitalprice_w_t,100-sum(digitalprice_w_t))#
+	MN_Table[MN_Table$Ticker=="DP",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(digitalprice_w_t))#
+	}, error=function(e){})#
+	######################################################################
+	## Masternode Coin#
+	tryCatch({#
+	masternodecoin_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("http://mtnc.snodo.de:3001/richlist"), useInternalNodes = TRUE))[[3]]$`%`[1:4]))#
+	masternodecoin_w_t <- c(masternodecoin_w_t,100-sum(masternodecoin_w_t))#
+	MN_Table[MN_Table$Ticker=="MTNC",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(masternodecoin_w_t))#
+	}, error=function(e){})#
+	######################################################################
+	## Numus Coin#
+	tryCatch({#
+	numus_w_t <- as.numeric(as.character(readHTMLTable(htmlTreeParse(readLines("https://altmix.org/coins/14-Numus/explorer/richList"), useInternalNodes = TRUE))[[2]]$`%`[1:4]))#
+	numus_w_t <- c(numus_w_t,100-sum(numus_w_t))#
+	MN_Table[MN_Table$Ticker=="NMS",c("% 1-25","% 26-50","% 51-75","% 76-100","% 101 +")] <- t(as.data.frame(numus_w_t))#
+	}, error=function(e){})
+data <- read_csv("Work/Repos/crypto/master_node/data/MN Derived Stats.csv")
+data <- readr::read_csv("Work/Repos/crypto/master_node/data/MN Derived Stats.csv")
+head(data)
+data$`Price Performance`
+data$`Price Performance`>0
+data <- readr::read_csv("Work/Repos/crypto/master_node/data/MN Stats.csv")
+data1 <- readr::read_csv("Work/Repos/crypto/master_node/data/MN Derived Stats.csv")
+head(Data)
+head(data)
+head(data1)
+as.data.frame(data1)
+as.data.frame(head(data1))
+aa <- content(httr::GET("https://coincheckup.com/data/prod/201806141541/assets/bitcoin.json"),"parsed")
+library(httr)
+aa <- content(GET("https://coincheckup.com/data/prod/201806141541/assets/bitcoin.json"),"parsed")
+aa
+names(aa)
+aa$market
+aa <- content(GET("https://coincheckup.com/data/prod/201806141541/coins.json"),"parsed")
+aa
+length(aa)
+names(aa[[1]])
+aa[[1]]$score
+aa[[1]]$scores
+aa[[1]]$score_rank
+aa[[1]]
+## Load Required Libraries#
+library(httr)#
+library(stringr)#
+#
+## Read teh fundamentals sheet #
+result <- GET("https://cloud.omnianalytics.io/ethercalc/mn_fundamentals.csv", authenticate("ethercalcuser", "c2Mk8X8LYp>ZTJy"))#
+#
+## Parse it to a clean data frame#
+data <- content(result, as = "parsed")#
+#
+## Defining function to parse github stats#
+github_stats <- function(gurl)#
+{#
+	if(is.na(gurl)) return(NA)#
+	## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	## Parse Data#
+	data.frame(#
+				"Created At" = rep_info_res$created_at, #
+				"Is Fork" = rep_info_res$fork,#
+				"Size" = rep_info_res$size,#
+				"Num Open Issues" = rep_info_res$open_issues,#
+				"Num Stars" = rep_info_res$stargazers_count,#
+				"Num Watchers" = rep_info_res$watchers_count,#
+				"Num Branches" = length(branches_res),#
+				"Num Forks" = rep_info_res$forks_count,#
+				"Num Contributors" = ifelse(length(contributors_res)>=100,"100+",length(contributors_res)),#
+				"Num Commits Year" = sum(unlist(activity_year_res[[1]])),#
+				"Num Commits 4wks" = sum(tail(unlist(activity_year_res[[1]]),4)),#
+				check.names=FALSE#
+				)#
+}
+names(data)
+## Looping for mn's#
+idx <- 1#
+github_stats_data <- list()#
+while(TRUE)#
+{#
+	message(idx)#
+	if(idx>nrow(data)) break()#
+	tryCatch({#
+				github_stats_data[[idx]] <- github_stats(data$`Github Link`[idx])#
+				idx <- idx+1#
+			}, error=function(e){#
+									message("Limit Wait!")#
+									Sys.sleep(5)#
+								}#
+				)#
+}#
+github_stats_df <- do.call(rbind,github_stats_data)
+head(github_stats_df)
+dim(github_stats_df)
+dim(data)
+sum(is.na(github_stats_df[,1]))
+head(data)
+cbind(data$Name, github_stats_df$`Created At`)->aa
+aa
+aa[is.na(aa[,2]),]
+aa[is.na(aa[,2]),][,1]
+data.frame(Name=aa[is.na(aa[,2]),][,1])
+write_csv(data.frame(Name=aa[is.na(aa[,2]),][,1]),"github_error.csv")
+readrLLwrite_csv(data.frame(Name=aa[is.na(aa[,2]),][,1]),"github_error.csv")
+readr::write_csv(data.frame(Name=aa[is.na(aa[,2]),][,1]),"github_error.csv")
+cbind(data$Name,data$`Github Link`, github_stats_df$`Created At`)->aa
+head(aa)
+aa[is.na(aa[,2]),][,1:2]
+aa[is.na(aa[,3]),][,1:2]
+readr::write_csv(data.frame(Name=aa[is.na(aa[,3]),][,1:2]),"github_error.csv")
+## Load Required Libraries#
+library(httr)#
+library(stringr)#
+#
+## Read teh fundamentals sheet #
+result <- GET("https://cloud.omnianalytics.io/ethercalc/mn_fundamentals.csv", authenticate("ethercalcuser", "c2Mk8X8LYp>ZTJy"))#
+#
+## Parse it to a clean data frame#
+data <- content(result, as = "parsed")#
+#
+## Defining function to parse github stats#
+github_stats <- function(gurl)#
+{#
+	if(is.na(gurl)) return(NA)#
+	## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	## Parse Data#
+	data.frame(#
+				"Created At" = rep_info_res$created_at, #
+				"Is Fork" = rep_info_res$fork,#
+				"Size" = rep_info_res$size,#
+				"Num Open Issues" = rep_info_res$open_issues,#
+				"Num Stars" = rep_info_res$stargazers_count,#
+				"Num Watchers" = rep_info_res$watchers_count,#
+				"Num Branches" = length(branches_res),#
+				"Num Forks" = rep_info_res$forks_count,#
+				"Num Contributors" = ifelse(length(contributors_res)>=100,"100+",length(contributors_res)),#
+				"Num Commits Year" = sum(unlist(activity_year_res[[1]])),#
+				"Num Commits 4wks" = sum(tail(unlist(activity_year_res[[1]]),4)),#
+				check.names=FALSE#
+				)#
+}#
+#
+## Looping for mn's#
+idx <- 1#
+github_stats_data <- list()#
+while(TRUE)#
+{#
+	message(idx)#
+	if(idx>nrow(data)) break()#
+	tryCatch({#
+				github_stats_data[[idx]] <- github_stats(data$`Github Link`[idx])#
+				idx <- idx+1#
+			}, error=function(e){#
+									message("Limit Wait!")#
+									Sys.sleep(5)#
+								}#
+				)#
+}#
+github_stats_df <- do.call(rbind,github_stats_data)#
+names(github_stats_df) <- paste("GH",names(github_stats_df))
+head(github_stats_df)
+github_stats_df$`GH Created At`
+github_stats_df [is.na(github_stats_df$`GH Created At`),]
+cbind(data$Github,github_stats_df)[is.na(github_stats_df$`GH Created At`),]
+cbind(data$`Github Link`,github_stats_df)[is.na(github_stats_df$`GH Created At`),]
+cbind(data$Name,data$`Github Link`,github_stats_df)[is.na(github_stats_df$`GH Created At`),]
+write_csv(cbind(data,github_stats_df),"MN Github Stats.csv")
+readr::write_csv(cbind(data,github_stats_df),"MN Github Stats.csv")
+dim(cbind(data$Name,data$`Github Link`,github_stats_df)[is.na(github_stats_df$`GH Created At`),])
+library(rvest)#
+library(XML)#
+url <- "http://h1bdata.info/index.php?em=&job=Data+Scientist&city=&year=2018"#
+table1=readHTMLTable(url,header = T,which=1, stringAsFactors=F)#
+write.csv(table1,"companies.csv")
+head(table1)
+dim(table1)
+## Create the parameter grid#
+job_grid <- c("Data+Scientist","Data+Analyst","Business+Intelligence+Analyst")#
+city_grid <- c("")#
+year_grid <- c(2018)#
+#
+## Prepare URL grid#
+url_grid <- paste0("http://h1bdata.info/index.php?em=&job=", job_grid, "&city=", city_grid, "&year=", year_gird )
+job_grid <- c("Data+Scientist","Data+Analyst","Business+Intelligence+Analyst")#
+city_grid <- c("")#
+year_grid <- c(2018)#
+#
+## Prepare URL grid#
+url_grid <- paste0("http://h1bdata.info/index.php?em=&job=", job_grid, "&city=", city_grid, "&year=", year_grid )
+url_grid
+job_grid <- c("Data+Scientist","Data+Analyst","Business+Intelligence+Analyst")#
+city_grid <- c("")#
+year_grid <- c(2017,2018)#
+#
+## Prepare URL grid#
+url_grid <- paste0("http://h1bdata.info/index.php?em=&job=", job_grid, "&city=", city_grid, "&year=", year_grid )
+url_grid
+url_grid <- paste0("http://h1bdata.info/index.php?em=&job=", job_grid, "&city=&year=2018" )
+url_grid
+## Create the parameter grid#
+job_grid <- c("Data+Scientist","Data+Analyst","Business+Intelligence+Analyst")#
+#
+## Prepare URL grid#
+url_grid <- paste0("http://h1bdata.info/index.php?em=&job=", job_grid, "&city=&year=2018" )#
+#
+## Define a empty data frame to hold the results and to append on later on#
+table <- data.frame()#
+#
+## Loop through url grid and download & append each data set#
+for(url in url_grid)#
+{#
+	table <- rbind(table,readHTMLTable(url,header = T,which=1, stringAsFactors=F))#
+	message(nrow(table))#
+}#
+#
+## Write out data set#
+write.csv(table_full,"companies.csv")
+## Load Required Libraries#
+library(httr)#
+library(stringr)#
+#
+## Read teh fundamentals sheet #
+result <- GET("https://cloud.omnianalytics.io/ethercalc/mn_fundamentals.csv", authenticate("ethercalcuser", "c2Mk8X8LYp>ZTJy"))#
+#
+## Parse it to a clean data frame#
+data <- content(result, as = "parsed")#
+#
+## Defining function to parse github stats#
+github_stats <- function(gurl)#
+{#
+	if(is.na(gurl)) return(NA)#
+	## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	## Parse Data#
+	data.frame(#
+				"Created At" = rep_info_res$created_at, #
+				"Is Fork" = rep_info_res$fork,#
+				"Size" = rep_info_res$size,#
+				"Num Open Issues" = rep_info_res$open_issues,#
+				"Num Stars" = rep_info_res$stargazers_count,#
+				"Num Watchers" = rep_info_res$watchers_count,#
+				"Num Branches" = length(branches_res),#
+				"Num Forks" = rep_info_res$forks_count,#
+				"Num Contributors" = ifelse(length(contributors_res)>=100,"100+",length(contributors_res)),#
+				"Num Commits Year" = sum(unlist(activity_year_res[[1]])),#
+				"Num Commits 4wks" = sum(tail(unlist(activity_year_res[[1]]),4)),#
+				check.names=FALSE#
+				)#
+}#
+#
+## Looping for mn's#
+idx <- 1#
+github_stats_data <- list()#
+while(TRUE)#
+{#
+	message(idx)#
+	if(idx>nrow(data)) break()#
+	tryCatch({#
+				github_stats_data[[idx]] <- github_stats(data$`Github Link`[idx])#
+				idx <- idx+1#
+			}, error=function(e){#
+									message("Limit Wait!")#
+									Sys.sleep(5)#
+								}#
+				)#
+}#
+github_stats_df <- do.call(rbind,github_stats_data)#
+names(github_stats_df) <- paste("GH",names(github_stats_df))
+head(github_stats_df)
+head(daat)
+head(data)
+data <- cbind(data,github_stats_df)
+head(data)
+mn_stats <- readr::read_csv("Work/Repos/crypto/master_node/data/MN Stats.csv")
+head(mn_stats)
+dim(mn_stats)
+match(mn_stats$Ticker,data$Ticker)
+head(data)
+dim(data)
+head(data[match(mn_stats$Ticker,data$Ticker),3:25])
+cbind(mn_stats,head(data[match(mn_stats$Ticker,data$Ticker),3:25]))->aa
+cbind(mn_stats,(data[match(mn_stats$Ticker,data$Ticker),3:25]))->aa
+head(aa)
+dim(aa)
+write_csv(aa,"MN Github Stats.csv")
+readr::write_csv(aa,"MN Github Stats.csv")
+github_stats(data$`Github Link`[idx])
+data$`Github Link`[idx]
+idx
+data$`Github Link`[idx-1]
+github_stats(data$`Github Link`[idx-1])
+data$`Github Link`[idx-1]->gurl
+## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")
+rep_info_res
+owner_name <- "polispay"
+repo_name <- "polis"
+## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")
+rep_info_res
+rep_info_res$parent$full_name
+data$`Github Link`[idx-1]->gurl
+if(is.na(gurl)) return(NA)#
+	## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")
+rep_info_res$parent$full_name
+ifelse(is.null(rep_info_res$parent$full_name),NA,rep_info_res$parent$full_name)
+## Load Required Libraries#
+library(httr)#
+library(stringr)#
+#
+## Read teh fundamentals sheet #
+result <- GET("https://cloud.omnianalytics.io/ethercalc/mn_fundamentals.csv", authenticate("ethercalcuser", "c2Mk8X8LYp>ZTJy"))#
+#
+## Parse it to a clean data frame#
+data <- content(result, as = "parsed")#
+#
+## Defining function to parse github stats#
+github_stats <- function(gurl)#
+{#
+	if(is.na(gurl)) return(NA)#
+	## Repository Info#
+	if(length(strsplit(gurl,"/")[[1]])!=5) return(NA)#
+	owner_name <- tail(strsplit(gurl,"/")[[1]],2)[1]#
+	repo_name <- tail(strsplit(gurl,"/")[[1]],2)[2]#
+#
+	## Request Data#
+	rep_info_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name),authenticate("dummyapi", "dummy_123")),"parsed")#
+	if(length(rep_info_res)==2) return(NA)#
+	branches_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/branches"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	contributors_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/contributors"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	activity_year_res <- content(GET(paste0("https://api.github.com/repos/",owner_name,"/",repo_name,"/stats/participation"),authenticate("dummyapi", "dummy_123")),"parsed")#
+	## Parse Data#
+	data.frame(#
+				"Created At" = rep_info_res$created_at, #
+				"Is Fork" = rep_info_res$fork,#
+				"Forked From" = ifelse(is.null(rep_info_res$parent$full_name),NA,rep_info_res$parent$full_name),#
+				"Size" = rep_info_res$size,#
+				"Num Open Issues" = rep_info_res$open_issues,#
+				"Num Stars" = rep_info_res$stargazers_count,#
+				"Num Watchers" = rep_info_res$watchers_count,#
+				"Num Branches" = length(branches_res),#
+				"Num Forks" = rep_info_res$forks_count,#
+				"Num Contributors" = ifelse(length(contributors_res)>=100,"100+",length(contributors_res)),#
+				"Num Commits Year" = sum(unlist(activity_year_res[[1]])),#
+				"Num Commits 4wks" = sum(tail(unlist(activity_year_res[[1]]),4)),#
+				check.names=FALSE#
+				)#
+}#
+#
+## Looping for mn's#
+idx <- 1#
+github_stats_data <- list()#
+while(TRUE)#
+{#
+	message(idx)#
+	if(idx>nrow(data)) break()#
+	tryCatch({#
+				github_stats_data[[idx]] <- github_stats(data$`Github Link`[idx])#
+				idx <- idx+1#
+			}, error=function(e){#
+									message("Limit Wait!")#
+									Sys.sleep(5)#
+								}#
+				)#
+}#
+github_stats_df <- do.call(rbind,github_stats_data)#
+names(github_stats_df) <- paste("GH",names(github_stats_df))
+data1 <- cbind(data,github_stats_df)#
+data_2 <- cbind(mn_stats,(data1[match(mn_stats$Ticker,data1$Ticker),3:25]))
+head(data2)
+head(data_2)
+dim(data_2)
+data_2$`GH Forked From`
+table(data_2$`GH Forked From`)
+write_csv(data_2,"MN Github Stats.csv")
+readr::write_csv(data_2,"MN Github Stats.csv")
+dim(data_2)
+match(mn_stats$Ticker,data1$Ticker)
+sum(is.na(match(mn_stats$Ticker,data1$Ticker)))
+sum(is.na(match(data1$Ticker,mn_stats$Ticker)))
+dim(Data1)
+dim(data1)
+dim(mn_stats)
+log(1:10)
+log10(1:10)
+log10(1^(1:10))
+log10(10^(1:10))
+10^(1:10)
+option(scipen=999)
+options(scipen=999)
+10^(1:10)
+tournament="Bernie"
+match(tournament,c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES"))
+match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+tournament_id
+tournament_id <- match(tolower("Ken"),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+tournament_id
+paste0('{dataset(tournament:',tournament_id,')}')
+setwd("Work/Repos/oag_github")
+list.files()
+setwd("Rnumerai")
+list.files()
+devtools::check()
+library(Rnumerai)
+download_data(location="~/Desktop/aa",tournament="Ken")
+location
+location <- "~/Desktop/aa/"
+data_train <- read.csv(file.path(location, "numerai_training_data.csv"))
+data_tournament <- read.csv(file.path(location, "numerai_tournament_data.csv"))
+submission <- data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
+tournament="Ken"
+## Match tournament ID#
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))#
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+tournament_id
+## Write out the file#
+	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))#
+	write.csv(submission, submission_filename, row.names = FALSE)
+library(lubridate)
+## Write out the file#
+	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))#
+	write.csv(submission, submission_filename, row.names = FALSE)
+## Get a slot on AWS for our submission#
+	aws_slot_query <- paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}')
+aws_slot_query
+query_pass <- run_query(query=aws_slot_query)
+query_pass
+D552URGZB77ZFH2PTXFOINICRW5OS7GO3AZE53REJZPXEK4K3HBDJDNSI75RTVIB
+set_api_key("D552URGZB77ZFH2PTXFOINICRW5OS7GO3AZE53REJZPXEK4K3HBDJDNSI75RTVIB")
+set_public_id("RMAOCNQZN7ZYFIBTKPEU4HIL7WUQSFIU")
+query_pass <- run_query(query=aws_slot_query)
+query_pass
+## Get a slot on AWS for our submission#
+	aws_slot_query <- paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}')#
+	query_pass <- run_query(query=aws_slot_query)
+query_pass
+et_api_key()
+get_api_key()
+## Get a slot on AWS for our submission#
+	aws_slot_query <- paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}')#
+	query_pass <- run_query(query=aws_slot_query)
+query_pass
+cat(paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}'))
+set_public_id("XF5DWODACY5U67TWAQLXTEJJFBSDOT3Z")
+## Get a slot on AWS for our submission#
+	aws_slot_query <- paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}')#
+	query_pass <- run_query(query=aws_slot_query)
+query_pass
+## Upload the predictions#
+	mysubmission <- PUT(#
+							url = query_pass$data$submissionUploadAuth$url,#
+							body = upload_file(path = submission_filename)#
+						)
+library(httr)
+## Upload the predictions#
+	mysubmission <- PUT(#
+							url = query_pass$data$submissionUploadAuth$url,#
+							body = upload_file(path = submission_filename)#
+						)
+register_submission_query <- paste0(#
+											'mutation register_submission_query {#
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'){id}#
+											}'#
+										)#
+	query_pass <- run_query(query=register_submission_query)
+query_pass
+names(submission)
+paste0(names(submission)[2],"_",tolower(tournament))
+## Match tournament ID#
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))#
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")#
+	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))#
+#
+	## Write out the file#
+	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))#
+	write.csv(submission, submission_filename, row.names = FALSE)#
+#
+	## Get a slot on AWS for our submission#
+	aws_slot_query <- paste0('query aws_slot_query {#
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){#
+								filename,#
+								url#
+							}#
+						}')#
+	query_pass <- run_query(query=aws_slot_query)#
+#
+	## Upload the predictions#
+	mysubmission <- PUT(#
+							url = query_pass$data$submissionUploadAuth$url,#
+							body = upload_file(path = submission_filename)#
+						)#
+#
+	## Register our submission and get evaluation for it#
+	register_submission_query <- paste0(#
+											'mutation register_submission_query {#
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'){id}#
+											}'#
+										)#
+	query_pass <- run_query(query=register_submission_query)
+query_pass
+install.packages("mxnet")
+query_pass$data$createSubmission$id
+user_info()
+sub_id <- "bf95716b-9af4-4ff1-92c6-fb3aaf9a472a"
+sub_stat_query <- paste0(#
+								'query sub_stat_query {#
+									submissions (id : "',sub_id,'"){#
+										filename,#
+										liveLogloss,#
+										round{#
+											number#
+										},#
+										selected,#
+										validationLogloss,#
+										consistency,#
+										originality {#
+											pending#
+											value#
+										},#
+										concordance {#
+											pending#
+											value#
+										}#
+									}#
+								}'#
+							)#
+	query_pass <- run_query(query=sub_stat_query)
+list(#
+					Submission_ID = sub_id,#
+					Round_Number = query_pass$data$submissions[[1]]$round$number,#
+					Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament],#
+					Filename = query_pass$data$submissions[[1]]$filename,#
+					Selected = query_pass$data$submissions[[1]]$selected,#
+					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,#
+					Originality = ifelse(!query_pass$data$submissions[[1]]$originality$pending,query_pass$data$submissions[[1]]$originality$value,"Pending"),#
+					Consistency = query_pass$data$submissions[[1]]$consistency,#
+					Concordance = ifelse(!query_pass$data$submissions[[1]]$concordance$pending,query_pass$data$submissions[[1]]$concordance$value,"Pending"),#
+					Live_Logloss = query_pass$data$submissions[[1]]$liveLogloss#
+					)
+query_pass$data$submissions[[1]]$round$number
+c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament]
+query_pass
+c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[4]
+list(#
+					Submission_ID = sub_id,#
+					Round_Number = query_pass$data$submissions[[1]]$round$number,#
+					Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament],#
+					Filename = query_pass$data$submissions[[1]]$filename,#
+					Selected = query_pass$data$submissions[[1]]$selected,#
+					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,#
+					Originality = ifelse(!query_pass$data$submissions[[1]]$originality$pending,query_pass$data$submissions[[1]]$originality$value,"Pending"),#
+					Consistency = query_pass$data$submissions[[1]]$consistency,#
+					Concordance = ifelse(!query_pass$data$submissions[[1]]$concordance$pending,query_pass$data$submissions[[1]]$concordance$value,"Pending"),#
+					Live_Logloss = query_pass$data$submissions[[1]]$liveLogloss#
+					)
+c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament]
+query_pass$data$submissions[[1]]$filename
+query_pass$data$submissions[[1]]$validationLogloss
+user_info()
+query_pass
+query_pass <- run_query(query=user_info_query)
+user_info_query <-	'query user_info_query {#
+							user {#
+								apiTokens {#
+									name#
+									publicId#
+									scopes#
+								}#
+								assignedEthAddress#
+								banned#
+								customEthAddresses#
+								id#
+								email#
+								username#
+								insertedAt#
+								status#
+								mfaEnabled#
+								latestSubmission {#
+									id#
+									round {#
+										number#
+									}#
+								}#
+								availableUsd#
+								availableNmr#
+								nmrDeposits {#
+									from#
+									to#
+									value#
+									posted#
+									source#
+									status#
+									txHash#
+								}#
+								nmrWithdrawals {#
+									from#
+									to#
+									value#
+									posted#
+									source#
+									status#
+									txHash#
+								}#
+								payments {#
+									round {#
+										number#
+									}#
+									nmrAmount#
+									usdAmount#
+									submission {#
+										id#
+										filename#
+									}#
+									tournament#
+								}#
+								usdWithdrawals {#
+									from#
+									to#
+									ethAmount#
+									usdAmount#
+									sendTime#
+									confirmTime#
+									status#
+									id#
+									posted#
+									userId#
+									txHash#
+								}#
+								stakeTxs{#
+									roundNumber#
+									value#
+									confidence#
+									status#
+									insertedAt#
+									soc#
+									staker#
+									txHash#
+								}#
+							}#
+						}'#
+#
+	query_pass <- run_query(query=user_info_query)
+query_pass
+query_pass$data$user
+query_pass$data$user$late
+names(query_pass$data$user)
+query_pass$data$user$latestSubmission
+cat('query current_round {#
+						rounds(number:0,tournament:1) {#
+							number#
+							closeTime#
+							closeStakingTime#
+						}#
+					}')
+list.files()
+devtools:check()
+devtools::check()
+library(Rnumerai)
+current_round()
+current_round(tournament="")
+devtools::check()
+devtools::check()
+library(Rnumerai)
+current_round(tournament="")
+current_round(tournament)
+current_round(tournament="Ken")
+paste0(#
+							'mutation stake_query {#
+								stake(code:"',mfa_code,'"#
+								password:"',password,'"#
+								value:"',value,'"#
+								confidence:"',confidence,'"#
+								tournament :',tournament_id,' #
+								round:',as.numeric(current_round()["Round_Number"]),'#
+								){#
+									txHash#
+								}}'#
+							)
+mfa_code=""
+value = 1; confidence = ".5"
+paste0(#
+							'mutation stake_query {#
+								stake(code:"',mfa_code,'"#
+								password:"',password,'"#
+								value:"',value,'"#
+								confidence:"',confidence,'"#
+								tournament :',tournament_id,' #
+								round:',as.numeric(current_round()["Round_Number"]),'#
+								){#
+									txHash#
+								}}'#
+							)
+password <- "bayo"
+paste0(#
+							'mutation stake_query {#
+								stake(code:"',mfa_code,'"#
+								password:"',password,'"#
+								value:"',value,'"#
+								confidence:"',confidence,'"#
+								tournament :',tournament_id,' #
+								round:',as.numeric(current_round()["Round_Number"]),'#
+								){#
+									txHash#
+								}}'#
+							)
+current_round()
+paste0(#
+							'mutation stake_query {#
+								stake(code:"',mfa_code,'"#
+								password:"',password,'"#
+								value:"',value,'"#
+								confidence:"',confidence,'"#
+								tournament :',tournament_id,' #
+								round:',as.numeric(current_round()["Round_Number"]),'#
+								){#
+									txHash#
+								}}'#
+							)
+cat(paste0(#
+							'mutation stake_query {#
+								stake(code:"',mfa_code,'"#
+								password:"',password,'"#
+								value:"',value,'"#
+								confidence:"',confidence,'"#
+								tournament :',tournament_id,' #
+								round:',as.numeric(current_round()["Round_Number"]),'#
+								){#
+									txHash#
+								}}'#
+							))
+round_number=89
+cat(paste0(#
+									'query round_stats_query {#
+									rounds(number:',round_number,',tournament:1){#
+										number#
+										openTime#
+										resolvedGeneral#
+										resolvedStaking#
+										closeTime#
+										closeStakingTime#
+										leaderboard {#
+											username#
+											banned#
+											validationLogloss#
+											consistency#
+											liveLogloss#
+											paymentGeneral {#
+												nmrAmount#
+												usdAmount#
+      										}#
+      										paymentStaking {#
+												usdAmount#
+												nmrAmount#
+											}#
+											stake {#
+												confidence#
+												value#
+											}#
+											stakeResolution {#
+												successful#
+												destroyed#
+												paid#
+											}#
+										}#
+									}}'#
+								))
+tournament_id=4
+round_stats_query <- paste0(#
+									'query round_stats_query {#
+									rounds(number:',round_number,',tournament:',tournament_id,'){#
+										number#
+										openTime#
+										resolvedGeneral#
+										resolvedStaking#
+										closeTime#
+										closeStakingTime#
+										leaderboard {#
+											username#
+											banned#
+											validationLogloss#
+											consistency#
+											liveLogloss#
+											paymentGeneral {#
+												nmrAmount#
+												usdAmount#
+      										}#
+      										paymentStaking {#
+												usdAmount#
+												nmrAmount#
+											}#
+											stake {#
+												confidence#
+												value#
+											}#
+											stakeResolution {#
+												successful#
+												destroyed#
+												paid#
+											}#
+										}#
+									}}'#
+								)#
+	query_pass <- run_query(query=round_stats_query)
+query_pass
+devtools::check()
+round_stats(79,tournament="ken")
+round_stats_query <- paste0(#
+									'query round_stats_query {#
+									rounds(number:',round_number,',tournament:',tournament_id,'){#
+										number#
+										tournament#
+										openTime#
+										resolvedGeneral#
+										resolvedStaking#
+										closeTime#
+										closeStakingTime#
+										leaderboard {#
+											username#
+											banned#
+											validationLogloss#
+											consistency#
+											liveLogloss#
+											paymentGeneral {#
+												nmrAmount#
+												usdAmount#
+      										}#
+      										paymentStaking {#
+												usdAmount#
+												nmrAmount#
+											}#
+											stake {#
+												confidence#
+												value#
+											}#
+											stakeResolution {#
+												successful#
+												destroyed#
+												paid#
+											}#
+										}#
+									}}'#
+								)#
+	query_pass <- run_query(query=round_stats_query)
+query_pass
+tournament_id <- 1
+query_pass
+round_stats_query <- paste0(#
+									'query round_stats_query {#
+									rounds(number:',round_number,',tournament:',tournament_id,'){#
+										number#
+										tournament#
+										openTime#
+										resolvedGeneral#
+										resolvedStaking#
+										closeTime#
+										closeStakingTime#
+										leaderboard {#
+											username#
+											banned#
+											validationLogloss#
+											consistency#
+											liveLogloss#
+											paymentGeneral {#
+												nmrAmount#
+												usdAmount#
+      										}#
+      										paymentStaking {#
+												usdAmount#
+												nmrAmount#
+											}#
+											stake {#
+												confidence#
+												value#
+											}#
+											stakeResolution {#
+												successful#
+												destroyed#
+												paid#
+											}#
+										}#
+									}}'#
+								)#
+	query_pass <- run_query(query=round_stats_query)
+query_pass
+round_data <- query_pass$data$rounds[[1]]
+data.frame(#
+								Round_Number = round_data$number,#
+								Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[round_data$tournament],#
+								Open_Time = round_data$openTime,#
+								Close_Time = round_data$closeTime,#
+								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),#
+								If_Resolved = round_data$resolvedGeneral#
+  							)

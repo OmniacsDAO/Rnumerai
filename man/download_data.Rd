@@ -4,10 +4,12 @@
 \alias{download_data}
 \title{Function to download the Numerai Tournament data}
 \usage{
-download_data(location = tempdir())
+download_data(location = tempdir(), tournament = "Bernie")
 }
 \arguments{
 \item{location}{The directory path in which to store the data}
+
+\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
 }
 \value{
 A list containing the training and tournament data objects

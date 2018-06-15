@@ -4,9 +4,12 @@
 \alias{stake_nmr}
 \title{Stake NMR on the current round}
 \usage{
-stake_nmr(value, confidence, mfa_code = "", password = "")
+stake_nmr(tournament = "Bernie", value, confidence, mfa_code = "",
+  password = "")
 }
 \arguments{
+\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
+
 \item{value}{The amount of NMR to stake}
 
 \item{confidence}{The confidence value to use}

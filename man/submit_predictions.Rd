@@ -4,12 +4,14 @@
 \alias{submit_predictions}
 \title{Function to submit the Numerai Tournament predictions}
 \usage{
-submit_predictions(submission, location = tempdir())
+submit_predictions(submission, location = tempdir(), tournament = "Bernie")
 }
 \arguments{
 \item{submission}{The data frame of predictions to submit. This should have two columns named "id" & "probability"}
 
 \item{location}{The location in which to store the predictions}
+
+\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
 }
 \value{
 The submission id for the submission made

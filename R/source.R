@@ -187,6 +187,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #'
 #' @name download_data
 #' @param location The directory path in which to store the data
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @return A list containing the training and tournament data objects
 #' @export
 #' @import lubridate
@@ -204,10 +205,14 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' data_train <- data$data_train
 #' data_tournament <- data$data_tournament
 #' }
-download_data <- function(location = tempdir())
+download_data <- function(location = tempdir(),tournament="Bernie")
 {
+	## Match tournament ID
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+
 	## Get download link
-	download_link_query <- '{dataset(tournament:1)}'
+	download_link_query <- paste0('{dataset(tournament:',tournament_id,')}')
 	query_pass <- run_query(query=download_link_query)
 	download_link <- query_pass$data$dataset
 
@@ -232,6 +237,7 @@ download_data <- function(location = tempdir())
 #' @name submit_predictions
 #' @param submission The data frame of predictions to submit. This should have two columns named "id" & "probability"
 #' @param location The location in which to store the predictions
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @return The submission id for the submission made
 #' @export
 #' @import lubridate
@@ -241,19 +247,24 @@ download_data <- function(location = tempdir())
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data)
 #' }
-submit_predictions <- function(submission, location = tempdir())
+submit_predictions <- function(submission, location = tempdir(),tournament="Bernie")
 {
+	## Match tournament ID
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
+
 	## Write out the file
 	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))
 	write.csv(submission, submission_filename, row.names = FALSE)
 
 	## Get a slot on AWS for our submission
-	aws_slot_query <- 'query aws_slot_query {
-							submissionUploadAuth (filename : "submission_data.csv",tournament:1){
+	aws_slot_query <- paste0('query aws_slot_query {
+							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){
 								filename,
 								url
 							}
-						}'
+						}')
 	query_pass <- run_query(query=aws_slot_query)
 
 	## Upload the predictions
@@ -265,7 +276,7 @@ submit_predictions <- function(submission, location = tempdir())
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
-												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:1){id}
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)
@@ -322,6 +333,7 @@ status_submission_by_id <- function(sub_id)
 	result <- list(
 					Submission_ID = sub_id,
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
+					Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament],
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
 					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,
@@ -490,21 +502,26 @@ user_info <- function()
 #' Get current round and it's closing time
 #'
 #' @name current_round
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @return Returns the current round number and it's closing times
 #' @export
 #' @examples
 #' \dontrun{
 #' current_round()
 #' }
-current_round <- function()
+current_round <- function(tournament="Bernie")
 {
-	current_round = 'query current_round {
-						rounds(number:0,tournament:1) {
+	## Match tournament ID
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+	
+	current_round = paste0('query current_round {
+						rounds(number:0,tournament:',tournament_id,') {
 							number
 							closeTime
 							closeStakingTime
 						}
-					}'
+					}')
 	query_pass <- run_query(query=current_round)
 	return(c(Round_Number=query_pass$data$rounds[[1]]$number,Close_Time=query_pass$data$rounds[[1]]$closeTime,Close_Staking_Time=query_pass$data$rounds[[1]]$closeStakingTime))
 }
@@ -512,6 +529,7 @@ current_round <- function()
 #' Stake NMR on the current round
 #'
 #' @name stake_nmr
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @param value The amount of NMR to stake
 #' @param confidence The confidence value to use
 #' @param mfa_code The mfa code
@@ -522,15 +540,19 @@ current_round <- function()
 #' \dontrun{
 #' stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")
 #' }
-stake_nmr <- function(value, confidence, mfa_code = "", password = "")
+stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", password = "")
 {
+	## Match tournament ID
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+
 	stake_query <- paste0(
 							'mutation stake_query {
 								stake(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
 								confidence:"',confidence,'"
-								tournament :1 
+								tournament :',tournament_id,' 
 								round:',as.numeric(current_round()["Round_Number"]),'
 								){
 									txHash
@@ -544,6 +566,7 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 #'
 #' @name round_stats
 #' @param round_number Round Number for which information to fetch
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @return List containing general round information and leaderboard
 #' @export
 #' @examples
@@ -552,12 +575,17 @@ stake_nmr <- function(value, confidence, mfa_code = "", password = "")
 #' round_info$round_info
 #' round_info$round_leaderboard
 #' }
-round_stats <- function(round_number)
+round_stats <- function(round_number,tournament="Bernie")
 {
+	## Match tournament ID
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+
 	round_stats_query <- paste0(
 									'query round_stats_query {
-									rounds(number:',round_number,',tournament:1){
+									rounds(number:',round_number,',tournament:',tournament_id,'){
 										number
+										tournament
 										openTime
 										resolvedGeneral
 										resolvedStaking
@@ -594,6 +622,7 @@ round_stats <- function(round_number)
 	round_data <- query_pass$data$rounds[[1]]
 	result_info <- data.frame(
 								Round_Number = round_data$number,
+								Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[round_data$tournament],
 								Open_Time = round_data$openTime,
 								Close_Time = round_data$closeTime,
 								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),

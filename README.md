@@ -46,7 +46,7 @@ Optional: If we choose not to setup the credentials here the terminal will inter
 
 ### 4. Download data set for the current tournament and split it into training data and tournament data 
 
--    `data <- download_data(data_dir)`
+-    `data <- download_data(data_dir,tournament="Elizabeth")`
 -    `data_train <- data$data_train`
 -    `data_tournament <- data$data_tournament`
 
@@ -58,7 +58,7 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 ### 6. Submit predictions and get submission id
 
--    `submission_id <- submit_predictions(submission, data_dir)`
+-    `submission_id <- submit_predictions(submission,data_dir,tournament="Elizabeth")`
 
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
@@ -67,7 +67,7 @@ A user can put his/her own custom model code to generate the predictions here. F
     
 ### 8. Stake submission on submission made above and get transaction hash for it.
 
--   `stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")`
+-   `stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")`
 -   `stake_tx_hash`
 
 # Additional functions
@@ -84,7 +84,7 @@ Get user information for the user whose API key and ID are entered, Check out th
 ### 2. Get leaderboard for a round
 Get leaderboard information for a given round number (Round 51 & Above).
 
--   `round_info <- round_stats(round_number=79)`
+-   `round_info <- round_stats(tournament="Bernie",round_number=79)`
 -   `round_info$round_info`
 -   `round_info$round_leaderboard`
 

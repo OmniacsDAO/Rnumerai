@@ -252,7 +252,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Bern
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
-	if(!all(names(submission)==c("id","tournament"))) stop("Column names should be id & probability")
+	if(!all(names(submission)==c("id","probability"))) stop("Column names should be id & probability")
 	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
 
 	## Write out the file

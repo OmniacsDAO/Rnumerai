@@ -58,6 +58,8 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 ### 6. Submit predictions and get submission id
 
+The submission object should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to parameter tournament supplied in following function. 
+
 -    `submission_id <- submit_predictions(submission,data_dir,tournament="Elizabeth")`
 
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)

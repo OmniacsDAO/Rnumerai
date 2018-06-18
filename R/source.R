@@ -252,6 +252,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Bern
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
+	if(!all(names(submission)==c("id","tournament"))) stop("Column names should be id & probability")
 	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
 
 	## Write out the file
@@ -281,9 +282,11 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Bern
 										)
 	query_pass <- run_query(query=register_submission_query)
 
-	message(paste("Submitted Prediction with id",query_pass$data$createSubmission$id))
+	## If error
+	if(!is.null(query_pass$errors[[1]]$message)) stop(query_pass$errors[[1]]$message)
 
 	## Return submission id
+	message(paste("Submitted Prediction with id",query_pass$data$createSubmission$id))
 	return(query_pass$data$createSubmission$id)
 }
 

@@ -187,7 +187,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #'
 #' @name download_data
 #' @param location The directory path in which to store the data
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
+#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive. Since at the moment the datasets are same for all tournaments this parameter can be left blank.
 #' @return A list containing the training and tournament data objects
 #' @export
 #' @import lubridate
@@ -201,7 +201,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' data_dir <- tempdir()
 #'
 #' ## Download data set for current competition
-#' data <- download_data(data_dir)
+#' data <- download_data(data_dir,tournament="Elizabeth")
 #' data_train <- data$data_train
 #' data_tournament <- data$data_tournament
 #' }
@@ -232,7 +232,7 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 	return(list(data_train=data_train,data_tournament=data_tournament))
 }
 
-#' Function to submit the Numerai Tournament predictions
+#' Function to submit the Numerai Tournament predictions for a single tournament
 #'
 #' @name submit_predictions
 #' @param submission The data frame of predictions to submit. This should have two columns named "id" & "probability"
@@ -245,7 +245,7 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 #' @importFrom utils write.csv
 #' @examples
 #' \dontrun{
-#' submission_id <- submit_predictions(submission_data)
+#' submission_id <- submit_predictions(submission_data,tournament="Elizabeth")
 #' }
 submit_predictions <- function(submission, location = tempdir(),tournament="Bernie")
 {
@@ -288,6 +288,41 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Bern
 	## Return submission id
 	message(paste("Submitted Prediction with id",query_pass$data$createSubmission$id))
 	return(query_pass$data$createSubmission$id)
+}
+
+#' Function to submit the Numerai Tournament predictions for multiple tournaments
+#'
+#' @name submit_predictions_multi
+#' @param submissions The named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named "id" & "probability" for that particular tournament
+#' @param location The location in which to store the predictions
+#' @return The submission ids for the submissions made
+#' @export
+#' @import lubridate
+#' @import httr
+#' @importFrom utils write.csv
+#' @examples
+#' \dontrun{
+#' submission_ids <- submit_predictions_multi(submissions_data)
+#' }
+submit_predictions_multi <- function(submissions, location = tempdir())
+{
+	## Error check
+	if(class(submissions)!="list") stop("submissions should be a named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named `id` & `probability` for that particular tournament")
+
+	## Loop for each element in the list and record the returned submission ids
+	submission_ids_return <- character()
+	for(idx in 1:length(submissions))
+	{
+		submission <- submissions[[idx]]
+		tournament <- names(submissions)[idx]
+
+		submission_ids_return <- c(submission_ids_return,tryCatch({
+																	submit_predictions(submission=submission,location=location,tournament=tournament)
+																	}, error=function(e){ as.character(e) }))
+	}
+
+	names(submission_ids_return) <- names(submissions)
+	return(submission_ids_return)
 }
 
 #' Get information about a submission from a submission id
@@ -529,7 +564,7 @@ current_round <- function(tournament="Bernie")
 	return(c(Round_Number=query_pass$data$rounds[[1]]$number,Close_Time=query_pass$data$rounds[[1]]$closeTime,Close_Staking_Time=query_pass$data$rounds[[1]]$closeStakingTime))
 }
 
-#' Stake NMR on the current round
+#' Stake NMR on the current round and single tournament
 #'
 #' @name stake_nmr
 #' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
@@ -541,7 +576,7 @@ current_round <- function(tournament="Bernie")
 #' @export
 #' @examples
 #' \dontrun{
-#' stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")
+#' stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")
 #' }
 stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", password = "")
 {
@@ -563,6 +598,42 @@ stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", pass
 							)
 	query_pass <- run_query(query=stake_query)
 	return(query_pass)
+}
+
+#' Stake NMR on the current round and multiple tournaments
+#'
+#' @name stake_nmr_multi
+#' @param tournaments The vector of names of the tournaments
+#' @param values The vector of the amounts of NMR to stake
+#' @param confidence_vals The vector of the confidence values to use
+#' @param mfa_code The mfa code
+#' @param password Your password
+#' @return The transaction hashes for stakes made
+#' @export
+#' @examples
+#' \dontrun{
+#' stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Elizabeth"),values = c(1,1), confidence_vals = c(".25",".5"))
+#' }
+stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", password = "")
+{
+	## Error Check
+	if(!all(length(tournaments)==c(length(tournaments),length(values),length(confidence_vals)))) stop("tournaments, values & confidence_vals should all be of equal lengths")
+
+	## Loop and make individual stakes
+	stake_tx_hashes <- character()
+	for(idx in 1:length(tournaments))
+	{
+		tournament <- tournaments[idx]
+		value <- values[idx]
+		confidence <- confidence_vals[idx]
+
+		stake_tx_hashes <- c(stake_tx_hashes,tryCatch({
+														stake_nmr(tournament=tournament,value = value, confidence = confidence)
+														}, error=function(e){ as.character(e) }))
+	}
+
+	names(stake_tx_hashes) <- tournaments
+	return(stake_tx_hashes)
 }
 
 #' Get Information and leader board for a Round Number

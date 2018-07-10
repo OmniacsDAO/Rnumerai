@@ -2,7 +2,7 @@
 % Please edit documentation in R/source.R
 \name{stake_nmr}
 \alias{stake_nmr}
-\title{Stake NMR on the current round}
+\title{Stake NMR on the current round and single tournament}
 \usage{
 stake_nmr(tournament = "Bernie", value, confidence, mfa_code = "",
   password = "")
@@ -22,10 +22,10 @@ stake_nmr(tournament = "Bernie", value, confidence, mfa_code = "",
 The transaction hash for stake made
 }
 \description{
-Stake NMR on the current round
+Stake NMR on the current round and single tournament
 }
 \examples{
 \dontrun{
-stake_tx_hash <- stake_nmr(value = 1, confidence = ".5")
+stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")
 }
 }

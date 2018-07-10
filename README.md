@@ -44,9 +44,9 @@ Get your public key and api key by going to numer.ai and then going to `Custom A
 
 Optional: If we choose not to setup the credentials here the terminal will interactively prompt us to type the values when we make an API call.
 
-### 4. Download data set for the current tournament and split it into training data and tournament data 
+### 4. Download data set for the current round and split it into training data and tournament data 
 
--    `data <- download_data(data_dir,tournament="Elizabeth")`
+-    `data <- download_data(data_dir)`
 -    `data_train <- data$data_train`
 -    `data_tournament <- data$data_tournament`
 
@@ -56,11 +56,26 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 -   `submission <- data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
 
-### 6. Submit predictions and get submission id
+### 5-A. Generate predictions for multiple tournaments
+
+A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
+
+-   `submissions <- list(
+							"Bernie" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE)),
+							"Elizabeth" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
+						)`
+
+### 6. Submit predictions for single tournament and get submission id
 
 The submission object should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to parameter tournament supplied in following function. 
 
 -    `submission_id <- submit_predictions(submission,data_dir,tournament="Elizabeth")`
+
+### 6-A. Submit predictions for multiple tournaments and get submission ids
+
+The submission object should be a named list and each element should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to the name of elements in the list.
+
+-    `submission_ids <- submit_predictions_multi(submissions,data_dir)`
 
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
@@ -71,6 +86,11 @@ The submission object should have two columns (id & probability) only, The submi
 
 -   `stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")`
 -   `stake_tx_hash`
+
+### 8-A. Stake submission on multiple tournament submissions made and get transaction hashes for them.
+
+-   `stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Elizabeth"),values = c(1,1), confidence_vals = c(".25",".5"))`
+-   `stake_tx_hashes`
 
 # Additional functions
 

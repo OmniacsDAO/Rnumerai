@@ -9,7 +9,7 @@ download_data(location = tempdir(), tournament = "Bernie")
 \arguments{
 \item{location}{The directory path in which to store the data}
 
-\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
+\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive. Since at the moment the datasets are same for all tournaments this parameter can be left blank.}
 }
 \value{
 A list containing the training and tournament data objects
@@ -24,7 +24,7 @@ Function to download the Numerai Tournament data
 data_dir <- tempdir()
 
 ## Download data set for current competition
-data <- download_data(data_dir)
+data <- download_data(data_dir,tournament="Elizabeth")
 data_train <- data$data_train
 data_tournament <- data$data_tournament
 }

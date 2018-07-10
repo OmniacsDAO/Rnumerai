@@ -2,7 +2,7 @@
 % Please edit documentation in R/source.R
 \name{submit_predictions}
 \alias{submit_predictions}
-\title{Function to submit the Numerai Tournament predictions}
+\title{Function to submit the Numerai Tournament predictions for a single tournament}
 \usage{
 submit_predictions(submission, location = tempdir(), tournament = "Bernie")
 }
@@ -17,10 +17,10 @@ submit_predictions(submission, location = tempdir(), tournament = "Bernie")
 The submission id for the submission made
 }
 \description{
-Function to submit the Numerai Tournament predictions
+Function to submit the Numerai Tournament predictions for a single tournament
 }
 \examples{
 \dontrun{
-submission_id <- submit_predictions(submission_data)
+submission_id <- submit_predictions(submission_data,tournament="Elizabeth")
 }
 }

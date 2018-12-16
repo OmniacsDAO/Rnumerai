@@ -208,7 +208,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 download_data <- function(location = tempdir(),tournament="Bernie")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	## Get download link
@@ -250,7 +250,7 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 submit_predictions <- function(submission, location = tempdir(),tournament="Bernie")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 	if(!all(names(submission)==c("id","probability"))) stop("Column names should be id & probability")
 	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
@@ -348,10 +348,6 @@ status_submission_by_id <- function(sub_id)
 										selected,
 										validationLogloss,
 										consistency,
-										originality {
-											pending
-											value
-										},
 										concordance {
 											pending
 											value
@@ -371,11 +367,10 @@ status_submission_by_id <- function(sub_id)
 	result <- list(
 					Submission_ID = sub_id,
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
-					Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[query_pass$data$submissions[[1]]$round$tournament],
+					Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")[query_pass$data$submissions[[1]]$round$tournament],
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
 					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,
-					Originality = ifelse(!query_pass$data$submissions[[1]]$originality$pending,query_pass$data$submissions[[1]]$originality$value,"Pending"),
 					Consistency = query_pass$data$submissions[[1]]$consistency,
 					Concordance = ifelse(!query_pass$data$submissions[[1]]$concordance$pending,query_pass$data$submissions[[1]]$concordance$value,"Pending"),
 					Live_Logloss = query_pass$data$submissions[[1]]$liveLogloss
@@ -458,9 +453,7 @@ user_info <- function()
 									sendTime
 									confirmTime
 									status
-									id
 									posted
-									userId
 									txHash
 								}
 								stakeTxs{
@@ -500,7 +493,7 @@ user_info <- function()
 	clean_usd_withdrawls <- function(x)
 	{
 		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","ethAmount","usdAmount","sendTime","confirmTime","status","id","posted","txHash","userId"),drop=FALSE])
+		return(as.data.frame(do.call(rbind,x))[,c("from","to","ethAmount","usdAmount","sendTime","confirmTime","status","posted","txHash"),drop=FALSE])
 	}
 	clean_payments_data <- function(x)
 	{
@@ -550,7 +543,7 @@ user_info <- function()
 current_round <- function(tournament="Bernie")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 	
 	current_round = paste0('query current_round {
@@ -581,7 +574,7 @@ current_round <- function(tournament="Bernie")
 stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", password = "")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	stake_query <- paste0(
@@ -652,7 +645,7 @@ stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", 
 round_stats <- function(round_number,tournament="Bernie")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	round_stats_query <- paste0(
@@ -696,7 +689,7 @@ round_stats <- function(round_number,tournament="Bernie")
 	round_data <- query_pass$data$rounds[[1]]
 	result_info <- data.frame(
 								Round_Number = round_data$number,
-								Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES")[round_data$tournament],
+								Tournament_Name = c("BERNIE","ELIZABETH","JORDAN","KEN","CHARLES","FRANK","HILLARY")[round_data$tournament],
 								Open_Time = round_data$openTime,
 								Close_Time = round_data$closeTime,
 								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),

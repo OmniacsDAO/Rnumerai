@@ -24,7 +24,7 @@ Function to download the Numerai Tournament data
 data_dir <- tempdir()
 
 ## Download data set for current competition
-data <- download_data(data_dir,tournament="Elizabeth")
+data <- download_data(data_dir,tournament="Bernie")
 data_train <- data$data_train
 data_tournament <- data$data_tournament
 }

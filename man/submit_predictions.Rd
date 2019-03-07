@@ -22,6 +22,6 @@ Function to submit the Numerai Tournament predictions for a single tournament
 }
 \examples{
 \dontrun{
-submission_id <- submit_predictions(submission_data,tournament="Elizabeth")
+submission_id <- submit_predictions(submission_data,tournament="Bernie")
 }
 }

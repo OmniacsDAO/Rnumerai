@@ -26,6 +26,6 @@ Stake NMR on the current round and single tournament
 }
 \examples{
 \dontrun{
-stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")
+stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")
 }
 }

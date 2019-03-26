@@ -62,14 +62,14 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 -   `submissions <- list(
 							"Bernie" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE)),
-							"Elizabeth" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
+							"Ken" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
 						)`
 
 ### 6. Submit predictions for single tournament and get submission id
 
 The submission object should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to parameter tournament supplied in following function. 
 
--    `submission_id <- submit_predictions(submission,data_dir,tournament="Elizabeth")`
+-    `submission_id <- submit_predictions(submission,data_dir,tournament="Bernie")`
 
 ### 6-A. Submit predictions for multiple tournaments and get submission ids
 
@@ -84,12 +84,12 @@ The submission object should be a named list and each element should have two co
     
 ### 8. Stake submission on submission made above and get transaction hash for it.
 
--   `stake_tx_hash <- stake_nmr(tournament="Elizabeth",value = 1, confidence = ".5")`
+-   `stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")`
 -   `stake_tx_hash`
 
 ### 8-A. Stake submission on multiple tournament submissions made and get transaction hashes for them.
 
--   `stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Elizabeth"),values = c(1,1), confidence_vals = c(".25",".5"))`
+-   `stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Ken"),values = c(1,1), confidence_vals = c(".25",".5"))`
 -   `stake_tx_hashes`
 
 # Additional functions

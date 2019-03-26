@@ -26,6 +26,6 @@ Stake NMR on the current round and multiple tournaments
 }
 \examples{
 \dontrun{
-stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Elizabeth"),values = c(1,1), confidence_vals = c(".25",".5"))
+stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Frank"),values = c(1,1), confidence_vals = c(".25",".5"))
 }
 }

@@ -318,7 +318,12 @@ submit_predictions_multi <- function(submissions, location = tempdir())
 		tournament <- names(submissions)[idx]
 		submission_id <- tryCatch({
 									submit_predictions(submission=submission,location=location,tournament=tournament)
-									}, error=function(e){message(paste0(e,"\n","Retrying.."));next()})
+									}, error=function(e) e)
+		if(inherits(submission_id, "error"))
+		{
+			message(paste0(submission_id$message,"\n","Retrying.."))
+			next()
+		}
 		submission_ids_return <- c(submission_ids_return,submission_id)
 		idx <- idx+1
 		if(idx > length(submissions)) break()
@@ -625,7 +630,12 @@ stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", 
 		confidence <- confidence_vals[idx]
 		stake_tx_hash <- tryCatch({
 									stake_nmr(tournament=tournament,value = value, confidence = confidence)
-									}, error=function(e){message(paste0(e,"\n","Retrying.."));next()})
+									}, error=function(e) e)
+		if(inherits(stake_tx_hash, "error"))
+		{
+			message(paste0(stake_tx_hash$message,"\n","Retrying.."))
+			next()
+		}
 		stake_tx_hashes <- c(stake_tx_hashes,stake_tx_hash)
 		idx <- idx+1
 		if(idx > length(tournaments)) break()

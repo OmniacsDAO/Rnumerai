@@ -311,14 +311,17 @@ submit_predictions_multi <- function(submissions, location = tempdir())
 
 	## Loop for each element in the list and record the returned submission ids
 	submission_ids_return <- character()
-	for(idx in 1:length(submissions))
+	idx=1
+	while(TRUE)
 	{
 		submission <- submissions[[idx]]
 		tournament <- names(submissions)[idx]
-
-		submission_ids_return <- c(submission_ids_return,tryCatch({
-																	submit_predictions(submission=submission,location=location,tournament=tournament)
-																	}, error=function(e){ as.character(e) }))
+		submission_id <- tryCatch({
+									submit_predictions(submission=submission,location=location,tournament=tournament)
+									}, error=function(e){message(paste0(e,"\n","Retrying.."));next()})
+		submission_ids_return <- c(submission_ids_return,submission_id)
+		idx <- idx+1
+		if(idx > length(submissions)) break()
 	}
 
 	names(submission_ids_return) <- names(submissions)

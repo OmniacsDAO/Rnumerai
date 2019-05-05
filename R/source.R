@@ -617,17 +617,19 @@ stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", 
 
 	## Loop and make individual stakes
 	stake_tx_hashes <- character()
-	for(idx in 1:length(tournaments))
+	idx <- 1
+	while(TRUE)
 	{
 		tournament <- tournaments[idx]
 		value <- values[idx]
 		confidence <- confidence_vals[idx]
-
-		stake_tx_hashes <- c(stake_tx_hashes,tryCatch({
-														stake_nmr(tournament=tournament,value = value, confidence = confidence)
-														}, error=function(e){ as.character(e) }))
+		stake_tx_hash <- tryCatch({
+									stake_nmr(tournament=tournament,value = value, confidence = confidence)
+									}, error=function(e){message(paste0(e,"\n","Retrying.."));next()})
+		stake_tx_hashes <- c(stake_tx_hashes,stake_tx_hash)
+		idx <- idx+1
+		if(idx > length(tournaments)) break()
 	}
-
 	names(stake_tx_hashes) <- tournaments
 	return(stake_tx_hashes)
 }

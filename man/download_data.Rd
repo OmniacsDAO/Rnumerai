@@ -4,7 +4,7 @@
 \alias{download_data}
 \title{Function to download the Numerai Tournament data}
 \usage{
-download_data(location = tempdir(), tournament = "Bernie")
+download_data(location = tempdir(), tournament = "Kazutsugi")
 }
 \arguments{
 \item{location}{The directory path in which to store the data}

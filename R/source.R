@@ -208,7 +208,8 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 download_data <- function(location = tempdir(),tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("KAZUTSUGI","BERNIE","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c(
+	    "BERNIE", "", "", "KEN", "CHARLES", "FRANK", "HILLARY", "KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	## Get download link
@@ -250,7 +251,7 @@ download_data <- function(location = tempdir(),tournament="Kazutsugi")
 submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("KAZUTSUGI","BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY", "KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 	if(!all(names(submission)==c("id","prediction"))) stop("Column names should be id & prediction")
 	names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
@@ -375,7 +376,7 @@ status_submission_by_id <- function(sub_id)
 	result <- list(
 					Submission_ID = sub_id,
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
-					Tournament_Name = c("KAZUTSUGI","BERNIE","","","KEN","CHARLES","FRANK","HILLARY")[query_pass$data$submissions[[1]]$round$tournament],
+					Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY", "KAZUTSUGI")[query_pass$data$submissions[[1]]$round$tournament],
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
 					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,
@@ -551,7 +552,7 @@ user_info <- function()
 current_round <- function(tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("KAZUTSUGI", "BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY", "KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	current_round = paste0('query current_round {
@@ -582,7 +583,7 @@ current_round <- function(tournament="Kazutsugi")
 stake_nmr <- function(tournament="Kazutsugi",value, confidence, mfa_code = "", password = "")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("KAZUTSUGI","BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE", "", "", "KEN", "CHARLES", "FRANK", "HILLARY", "KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	stake_query <- paste0(

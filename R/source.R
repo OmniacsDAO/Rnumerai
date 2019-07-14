@@ -661,7 +661,7 @@ stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", 
 round_stats <- function(round_number,tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("KAZUTSUGI","BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	round_stats_query <- paste0(
@@ -678,8 +678,12 @@ round_stats <- function(round_number,tournament="Kazutsugi")
 											username
 											banned
 											validationLogloss
+											validationAuroc
+											validationCorrelation
 											consistency
 											liveLogloss
+											liveAuroc
+											liveCorrelation
 											paymentGeneral {
 												nmrAmount
 												usdAmount
@@ -705,7 +709,7 @@ round_stats <- function(round_number,tournament="Kazutsugi")
 	round_data <- query_pass$data$rounds[[1]]
 	result_info <- data.frame(
 								Round_Number = round_data$number,
-								Tournament_Name = c("KAZUTSUGI","BERNIE","","","KEN","CHARLES","FRANK","HILLARY")[round_data$tournament],
+								Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")[round_data$tournament],
 								Open_Time = round_data$openTime,
 								Close_Time = round_data$closeTime,
 								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),
@@ -717,6 +721,10 @@ round_stats <- function(round_number,tournament="Kazutsugi")
 										Banned = sapply(round_lb,function(x) x$banned),
 										Live_Logloss = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveLogloss),0,x$liveLogloss))),
 										Validation_Logloss = sapply(round_lb,function(x) ifelse(is.null(x$validationLogloss),NA,x$validationLogloss)),
+										Live_Auroc = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveAuroc),0,x$liveAuroc))),
+										Validation_Auroc = sapply(round_lb,function(x) ifelse(is.null(x$validationAuroc),NA,x$validationAuroc)),
+										Live_Correlation = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveCorrelation),0,x$liveCorrelation))),
+										Validation_Correlation = sapply(round_lb,function(x) ifelse(is.null(x$validationCorrelation),NA,x$validationCorrelation)),
 										Consistency = sapply(round_lb,function(x) ifelse(is.null(x$consistency),NA,x$consistency)),
 										Paid_USD = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$usdAmount),0,x$paymentGeneral$usdAmount))),
 										Paid_NMR = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$nmrAmount),0,x$paymentGeneral$nmrAmount))),

@@ -208,7 +208,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 download_data <- function(location = tempdir(),tournament="Bernie")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	## Get download link
@@ -247,12 +247,12 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data,tournament="Bernie")
 #' }
-submit_predictions <- function(submission, location = tempdir(),tournament="Bernie")
+submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
-	#if(!all(names(submission)==c("id","probability"))) stop("Column names should be id & probability")
+	if(!all(names(submission)==c("id","prediction_kazutsugi"))) stop("Column names should be id & prediction_kazutsugi")
 	#names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
 
 	## Write out the file
@@ -290,48 +290,48 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Bern
 	return(query_pass$data$createSubmission$id)
 }
 
-#' Function to submit the Numerai Tournament predictions for multiple tournaments
-#'
-#' @name submit_predictions_multi
-#' @param submissions The named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named "id" & "probability" for that particular tournament
-#' @param location The location in which to store the predictions
-#' @return The submission ids for the submissions made
-#' @export
-#' @import lubridate
-#' @import httr
-#' @importFrom utils write.csv
-#' @examples
-#' \dontrun{
-#' submission_ids <- submit_predictions_multi(submissions_data)
-#' }
-submit_predictions_multi <- function(submissions, location = tempdir())
-{
-	## Error check
-	if(class(submissions)!="list") stop("submissions should be a named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named `id` & `probability` for that particular tournament")
+# #' Function to submit the Numerai Tournament predictions for multiple tournaments
+# #'
+# #' @name submit_predictions_multi
+# #' @param submissions The named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named "id" & "probability" for that particular tournament
+# #' @param location The location in which to store the predictions
+# #' @return The submission ids for the submissions made
+# #' @export
+# #' @import lubridate
+# #' @import httr
+# #' @importFrom utils write.csv
+# #' @examples
+# #' \dontrun{
+# #' submission_ids <- submit_predictions_multi(submissions_data)
+# #' }
+# submit_predictions_multi <- function(submissions, location = tempdir())
+# {
+# 	## Error check
+# 	if(class(submissions)!="list") stop("submissions should be a named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named `id` & `probability` for that particular tournament")
 
-	## Loop for each element in the list and record the returned submission ids
-	submission_ids_return <- character()
-	idx=1
-	while(TRUE)
-	{
-		submission <- submissions[[idx]]
-		tournament <- names(submissions)[idx]
-		submission_id <- tryCatch({
-									submit_predictions(submission=submission,location=location,tournament=tournament)
-									}, error=function(e) e)
-		if(inherits(submission_id, "error"))
-		{
-			message(paste0(submission_id$message,"\n","Retrying.."))
-			next()
-		}
-		submission_ids_return <- c(submission_ids_return,submission_id)
-		idx <- idx+1
-		if(idx > length(submissions)) break()
-	}
+# 	## Loop for each element in the list and record the returned submission ids
+# 	submission_ids_return <- character()
+# 	idx=1
+# 	while(TRUE)
+# 	{
+# 		submission <- submissions[[idx]]
+# 		tournament <- names(submissions)[idx]
+# 		submission_id <- tryCatch({
+# 									submit_predictions(submission=submission,location=location,tournament=tournament)
+# 									}, error=function(e) e)
+# 		if(inherits(submission_id, "error"))
+# 		{
+# 			message(paste0(submission_id$message,"\n","Retrying.."))
+# 			next()
+# 		}
+# 		submission_ids_return <- c(submission_ids_return,submission_id)
+# 		idx <- idx+1
+# 		if(idx > length(submissions)) break()
+# 	}
 
-	names(submission_ids_return) <- names(submissions)
-	return(submission_ids_return)
-}
+# 	names(submission_ids_return) <- names(submissions)
+# 	return(submission_ids_return)
+# }
 
 #' Get information about a submission from a submission id
 #'
@@ -375,7 +375,7 @@ status_submission_by_id <- function(sub_id)
 	result <- list(
 					Submission_ID = sub_id,
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
-					Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")[query_pass$data$submissions[[1]]$round$tournament],
+					Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")[query_pass$data$submissions[[1]]$round$tournament],
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
 					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,

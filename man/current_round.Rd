@@ -4,7 +4,7 @@
 \alias{current_round}
 \title{Get current round and it's closing time}
 \usage{
-current_round(tournament = "Bernie")
+current_round(tournament = "Kazutsugi")
 }
 \arguments{
 \item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}

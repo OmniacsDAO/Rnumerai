@@ -4,7 +4,7 @@
 \alias{stake_nmr}
 \title{Stake NMR on the current round and single tournament}
 \usage{
-stake_nmr(tournament = "Kazutsugi", value, confidence, mfa_code = "",
+stake_nmr(tournament = "Bernie", value, confidence, mfa_code = "",
   password = "")
 }
 \arguments{

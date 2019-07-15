@@ -4,7 +4,7 @@
 \alias{round_stats}
 \title{Get Information and leader board for a Round Number}
 \usage{
-round_stats(round_number, tournament = "Kazutsugi")
+round_stats(round_number, tournament = "Bernie")
 }
 \arguments{
 \item{round_number}{Round Number for which information to fetch}

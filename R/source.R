@@ -548,10 +548,10 @@ user_info <- function()
 #' \dontrun{
 #' current_round()
 #' }
-current_round <- function(tournament="Bernie")
+current_round <- function(tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	current_round = paste0('query current_round {
@@ -579,10 +579,10 @@ current_round <- function(tournament="Bernie")
 #' \dontrun{
 #' stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")
 #' }
-stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", password = "")
+stake_nmr <- function(tournament="Kazutsugi",value, confidence, mfa_code = "", password = "")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	stake_query <- paste0(
@@ -601,48 +601,48 @@ stake_nmr <- function(tournament="Bernie",value, confidence, mfa_code = "", pass
 	return(query_pass)
 }
 
-#' Stake NMR on the current round and multiple tournaments
-#'
-#' @name stake_nmr_multi
-#' @param tournaments The vector of names of the tournaments
-#' @param values The vector of the amounts of NMR to stake
-#' @param confidence_vals The vector of the confidence values to use
-#' @param mfa_code The mfa code
-#' @param password Your password
-#' @return The transaction hashes for stakes made
-#' @export
-#' @examples
-#' \dontrun{
-#' stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Frank"),values = c(1,1), confidence_vals = c(".25",".5"))
-#' }
-stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", password = "")
-{
-	## Error Check
-	if(!all(length(tournaments)==c(length(tournaments),length(values),length(confidence_vals)))) stop("tournaments, values & confidence_vals should all be of equal lengths")
+# #' Stake NMR on the current round and multiple tournaments
+# #'
+# #' @name stake_nmr_multi
+# #' @param tournaments The vector of names of the tournaments
+# #' @param values The vector of the amounts of NMR to stake
+# #' @param confidence_vals The vector of the confidence values to use
+# #' @param mfa_code The mfa code
+# #' @param password Your password
+# #' @return The transaction hashes for stakes made
+# #' @export
+# #' @examples
+# #' \dontrun{
+# #' stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Frank"),values = c(1,1), confidence_vals = c(".25",".5"))
+# #' }
+# stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", password = "")
+# {
+# 	## Error Check
+# 	if(!all(length(tournaments)==c(length(tournaments),length(values),length(confidence_vals)))) stop("tournaments, values & confidence_vals should all be of equal lengths")
 
-	## Loop and make individual stakes
-	stake_tx_hashes <- character()
-	idx <- 1
-	while(TRUE)
-	{
-		tournament <- tournaments[idx]
-		value <- values[idx]
-		confidence <- confidence_vals[idx]
-		stake_tx_hash <- tryCatch({
-									stake_nmr(tournament=tournament,value = value, confidence = confidence)
-									}, error=function(e) e)
-		if(inherits(stake_tx_hash, "error"))
-		{
-			message(paste0(stake_tx_hash$message,"\n","Retrying.."))
-			next()
-		}
-		stake_tx_hashes <- c(stake_tx_hashes,stake_tx_hash)
-		idx <- idx+1
-		if(idx > length(tournaments)) break()
-	}
-	names(stake_tx_hashes) <- tournaments
-	return(stake_tx_hashes)
-}
+# 	## Loop and make individual stakes
+# 	stake_tx_hashes <- character()
+# 	idx <- 1
+# 	while(TRUE)
+# 	{
+# 		tournament <- tournaments[idx]
+# 		value <- values[idx]
+# 		confidence <- confidence_vals[idx]
+# 		stake_tx_hash <- tryCatch({
+# 									stake_nmr(tournament=tournament,value = value, confidence = confidence)
+# 									}, error=function(e) e)
+# 		if(inherits(stake_tx_hash, "error"))
+# 		{
+# 			message(paste0(stake_tx_hash$message,"\n","Retrying.."))
+# 			next()
+# 		}
+# 		stake_tx_hashes <- c(stake_tx_hashes,stake_tx_hash)
+# 		idx <- idx+1
+# 		if(idx > length(tournaments)) break()
+# 	}
+# 	names(stake_tx_hashes) <- tournaments
+# 	return(stake_tx_hashes)
+# }
 
 #' Get Information and leader board for a Round Number
 #'
@@ -657,10 +657,10 @@ stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", 
 #' round_info$round_info
 #' round_info$round_leaderboard
 #' }
-round_stats <- function(round_number,tournament="Bernie")
+round_stats <- function(round_number,tournament="Kazutsugi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	round_stats_query <- paste0(
@@ -704,7 +704,7 @@ round_stats <- function(round_number,tournament="Bernie")
 	round_data <- query_pass$data$rounds[[1]]
 	result_info <- data.frame(
 								Round_Number = round_data$number,
-								Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY")[round_data$tournament],
+								Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")[round_data$tournament],
 								Open_Time = round_data$openTime,
 								Close_Time = round_data$closeTime,
 								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),

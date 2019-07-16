@@ -62,20 +62,14 @@ A user can put his/her own custom model code to generate the predictions here. F
 
 -   `submissions <- list(
 							"Bernie" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE)),
-							"Ken" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
+							"Ken" = data.frame(id=data_tournament$id,prediction_kazutsugi = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
 						)`
 
 ### 6. Submit predictions for single tournament and get submission id
 
-The submission object should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to parameter tournament supplied in following function. 
+The submission object should have two columns (id & prediction_kazutsugi) only.
 
--    `submission_id <- submit_predictions(submission,data_dir,tournament="Bernie")`
-
-### 6-A. Submit predictions for multiple tournaments and get submission ids
-
-The submission object should be a named list and each element should have two columns (id & probability) only, The submission function would automatically append the tournament name to probability column according to the name of elements in the list.
-
--    `submission_ids <- submit_predictions_multi(submissions,data_dir)`
+-    `submission_id <- submit_predictions(submission,data_dir,tournament="Kazutsugi")`
 
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
@@ -84,13 +78,8 @@ The submission object should be a named list and each element should have two co
     
 ### 8. Stake submission on submission made above and get transaction hash for it.
 
--   `stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")`
+-   `stake_tx_hash <- stake_nmr(tournament="Kazutsugi",value = 1, confidence = ".5")`
 -   `stake_tx_hash`
-
-### 8-A. Stake submission on multiple tournament submissions made and get transaction hashes for them.
-
--   `stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Ken"),values = c(1,1), confidence_vals = c(".25",".5"))`
--   `stake_tx_hashes`
 
 # Additional functions
 
@@ -106,7 +95,7 @@ Get user information for the user whose API key and ID are entered, Check out th
 ### 2. Get leaderboard for a round
 Get leaderboard information for a given round number (Round 51 & Above).
 
--   `round_info <- round_stats(tournament="Bernie",round_number=79)`
+-   `round_info <- round_stats(tournament="Kazutsugi",round_number=79)`
 -   `round_info$round_info`
 -   `round_info$round_leaderboard`
 

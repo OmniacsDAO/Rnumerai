@@ -2,26 +2,26 @@
 % Please edit documentation in R/source.R
 \name{submit_predictions}
 \alias{submit_predictions}
-\title{Function to submit the Numerai Tournament predictions for a single tournament}
+\title{Function to submit the Numerai Tournament predictions}
 \usage{
 submit_predictions(submission, location = tempdir(),
   tournament = "Kazutsugi")
 }
 \arguments{
-\item{submission}{The data frame of predictions to submit. This should have two columns named "id" & "probability"}
+\item{submission}{The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"}
 
 \item{location}{The location in which to store the predictions}
 
-\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
+\item{tournament}{The name of the tournament, Default is Kazutsugi and is not case-sensitive}
 }
 \value{
 The submission id for the submission made
 }
 \description{
-Function to submit the Numerai Tournament predictions for a single tournament
+Function to submit the Numerai Tournament predictions
 }
 \examples{
 \dontrun{
-submission_id <- submit_predictions(submission_data,tournament="Bernie")
+submission_id <- submit_predictions(submission_data,tournament="Kazutsugi")
 }
 }

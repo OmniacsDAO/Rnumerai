@@ -187,7 +187,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #'
 #' @name download_data
 #' @param location The directory path in which to store the data
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive. Since at the moment the datasets are same for all tournaments this parameter can be left blank.
+#' @param tournament The name of the tournament, Default is KAZUTSUGI and is not case-sensitive. Since at the moment the datasets are same for all tournaments this parameter can be left blank.
 #' @return A list containing the training and tournament data objects
 #' @export
 #' @import lubridate
@@ -201,11 +201,11 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' data_dir <- tempdir()
 #'
 #' ## Download data set for current competition
-#' data <- download_data(data_dir,tournament="Bernie")
+#' data <- download_data(data_dir,tournament="KAZUTSUGI")
 #' data_train <- data$data_train
 #' data_tournament <- data$data_tournament
 #' }
-download_data <- function(location = tempdir(),tournament="Bernie")
+download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 {
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
@@ -232,12 +232,12 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 	return(list(data_train=data_train,data_tournament=data_tournament))
 }
 
-#' Function to submit the Numerai Tournament predictions for a single tournament
+#' Function to submit the Numerai Tournament predictions
 #'
 #' @name submit_predictions
-#' @param submission The data frame of predictions to submit. This should have two columns named "id" & "probability"
+#' @param submission The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"
 #' @param location The location in which to store the predictions
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
+#' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
 #' @return The submission id for the submission made
 #' @export
 #' @import lubridate
@@ -245,7 +245,7 @@ download_data <- function(location = tempdir(),tournament="Bernie")
 #' @importFrom utils write.csv
 #' @examples
 #' \dontrun{
-#' submission_id <- submit_predictions(submission_data,tournament="Bernie")
+#' submission_id <- submit_predictions(submission_data,tournament="Kazutsugi")
 #' }
 submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi")
 {

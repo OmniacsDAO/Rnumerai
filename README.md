@@ -54,18 +54,9 @@ Optional: If we choose not to setup the credentials here the terminal will inter
 
 A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
 
--   `submission <- data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
+-   `submission <- data.frame(id=data_tournament$id,prediction_kazutsugi = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
 
-### 5-A. Generate predictions for multiple tournaments
-
-A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
-
--   `submissions <- list(
-							"Bernie" = data.frame(id=data_tournament$id,probability = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE)),
-							"Ken" = data.frame(id=data_tournament$id,prediction_kazutsugi = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))
-						)`
-
-### 6. Submit predictions for single tournament and get submission id
+### 6. Submit predictions for tournament and get submission id
 
 The submission object should have two columns (id & prediction_kazutsugi) only.
 

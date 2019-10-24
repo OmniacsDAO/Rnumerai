@@ -105,7 +105,7 @@ Get V2 Leaderboard
 ### 5. Get User Performance
 Get V2 User Profile 
 
--   `user_performance(username="theomniacs")`
+-   `user_performance(user_name="theomniacs")`
 
 ### 6. Run Custom GraphQL code from R:
 

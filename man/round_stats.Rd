@@ -2,25 +2,23 @@
 % Please edit documentation in R/source.R
 \name{round_stats}
 \alias{round_stats}
-\title{Get Information and leader board for a Round Number}
+\title{Get Information for a Round Number}
 \usage{
 round_stats(round_number, tournament = "Kazutsugi")
 }
 \arguments{
 \item{round_number}{Round Number for which information to fetch}
 
-\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
+\item{tournament}{The name of the tournament, Default is Kazutsugi and is not case-sensitive}
 }
 \value{
-List containing general round information and leaderboard
+List containing general round information
 }
 \description{
-Get Information and leader board for a Round Number
+Get Information for a Round Number
 }
 \examples{
 \dontrun{
-round_info <- round_stats(round_number=79)
-round_info$round_info
-round_info$round_leaderboard
+round_stats(round_number=177)
 }
 }

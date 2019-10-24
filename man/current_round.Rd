@@ -7,7 +7,7 @@
 current_round(tournament = "Kazutsugi")
 }
 \arguments{
-\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
+\item{tournament}{The name of the tournament, Default is Kazutsugi and is not case-sensitive}
 }
 \value{
 Returns the current round number and it's closing times

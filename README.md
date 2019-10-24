@@ -67,10 +67,15 @@ The submission object should have two columns (id & prediction_kazutsugi) only.
 -   `Sys.sleep(10)      ## 10 Seconds wait period`
 -   `status_submission_by_id(submission_id)`
     
-### 8. Stake submission on submission made above and get transaction hash for it.
+### 8. Stake submission on submission and get transaction hash for it.
 
--   `stake_tx_hash <- stake_nmr(tournament="Kazutsugi",value = 1, confidence = ".5")`
+-   `stake_tx_hash <- stake_nmr(value = 1)`
 -   `stake_tx_hash`
+
+### 9. Release Stake and get transaction hash for it.
+
+-   `release_tx_hash <- release_nmr(value = 1)`
+-   `release_tx_hash`
 
 # Additional functions
 
@@ -81,24 +86,26 @@ Get user information for the user whose API key and ID are entered, Check out th
 -   `uinfo <- user_info()`
 -   `uinfo`
 -   `names(uinfo)`
--   `uinfo$Latest_Submission`
 
-### 2. Get leaderboard for a round
-Get leaderboard information for a given round number (Round 51 & Above).
+### 2. Get Information for a round
+Get information for a given round number.
 
--   `round_info <- round_stats(tournament="Kazutsugi",round_number=79)`
--   `round_info$round_info`
--   `round_info$round_leaderboard`
+-   `round_stats(tournament="Kazutsugi",round_number=177)`
 
 ### 3. Get current open round
 Get closing time and round number for current open round
 
 -   `current_round()`
 
-### 4. Run Custom GraphQL code from R:
+### 4. Get current leaderboard
+Get V2 Leaderboard
+
+-   `leaderboard()`
+
+### 5. Run Custom GraphQL code from R:
 
 -   `custom_query <- 'query queryname {
-    					rounds (number:82) {
+    					rounds (number:177) {
     						closeTime
     					}
     				}'`

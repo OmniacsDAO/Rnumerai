@@ -2,17 +2,12 @@
 % Please edit documentation in R/source.R
 \name{stake_nmr}
 \alias{stake_nmr}
-\title{Stake NMR on the current round and single tournament}
+\title{Stake NMR}
 \usage{
-stake_nmr(tournament = "Kazutsugi", value, confidence, mfa_code = "",
-  password = "")
+stake_nmr(value, mfa_code = "", password = "")
 }
 \arguments{
-\item{tournament}{The name of the tournament, Default is Bernie and is not case-sensitive}
-
 \item{value}{The amount of NMR to stake}
-
-\item{confidence}{The confidence value to use}
 
 \item{mfa_code}{The mfa code}
 
@@ -22,10 +17,10 @@ stake_nmr(tournament = "Kazutsugi", value, confidence, mfa_code = "",
 The transaction hash for stake made
 }
 \description{
-Stake NMR on the current round and single tournament
+Stake NMR
 }
 \examples{
 \dontrun{
-stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")
+stake_tx_hash <- stake_nmr(value = 1)
 }
 }

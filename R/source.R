@@ -290,48 +290,6 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	return(query_pass$data$createSubmission$id)
 }
 
-# #' Function to submit the Numerai Tournament predictions for multiple tournaments
-# #'
-# #' @name submit_predictions_multi
-# #' @param submissions The named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named "id" & "probability" for that particular tournament
-# #' @param location The location in which to store the predictions
-# #' @return The submission ids for the submissions made
-# #' @export
-# #' @import lubridate
-# #' @import httr
-# #' @importFrom utils write.csv
-# #' @examples
-# #' \dontrun{
-# #' submission_ids <- submit_predictions_multi(submissions_data)
-# #' }
-# submit_predictions_multi <- function(submissions, location = tempdir())
-# {
-# 	## Error check
-# 	if(class(submissions)!="list") stop("submissions should be a named list of the data frames of predictions to submit. The list names should be tournament names and each element a data frame having two columns named `id` & `probability` for that particular tournament")
-
-# 	## Loop for each element in the list and record the returned submission ids
-# 	submission_ids_return <- character()
-# 	idx=1
-# 	while(TRUE)
-# 	{
-# 		submission <- submissions[[idx]]
-# 		tournament <- names(submissions)[idx]
-# 		submission_id <- tryCatch({
-# 									submit_predictions(submission=submission,location=location,tournament=tournament)
-# 									}, error=function(e) e)
-# 		if(inherits(submission_id, "error"))
-# 		{
-# 			message(paste0(submission_id$message,"\n","Retrying.."))
-# 			next()
-# 		}
-# 		submission_ids_return <- c(submission_ids_return,submission_id)
-# 		idx <- idx+1
-# 		if(idx > length(submissions)) break()
-# 	}
-
-# 	names(submission_ids_return) <- names(submissions)
-# 	return(submission_ids_return)
-# }
 
 #' Get information about a submission from a submission id
 #'
@@ -349,12 +307,12 @@ status_submission_by_id <- function(sub_id)
 								'query sub_stat_query {
 									submissions (id : "',sub_id,'"){
 										filename,
-										liveLogloss,
+										validationCorrelation,
+										liveCorrelation,
 										round{
 											number
 										},
 										selected,
-										validationLogloss,
 										consistency,
 										concordance {
 											pending
@@ -366,22 +324,21 @@ status_submission_by_id <- function(sub_id)
 	query_pass <- run_query(query=sub_stat_query)
 
 	## If not evaluated yet
-	if(is.null(query_pass$data$submissions[[1]]$validationLogloss))
+	if(is.null(query_pass$data$submissions[[1]]$concordance))
 	{
-		return(NULL)
+		return("Not Scored Yet")
 	}
 
 	## If evaluated submission
 	result <- list(
 					Submission_ID = sub_id,
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
-					Tournament_Name = c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")[query_pass$data$submissions[[1]]$round$tournament],
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
-					Validation_Logloss = query_pass$data$submissions[[1]]$validationLogloss,
 					Consistency = query_pass$data$submissions[[1]]$consistency,
 					Concordance = ifelse(!query_pass$data$submissions[[1]]$concordance$pending,query_pass$data$submissions[[1]]$concordance$value,"Pending"),
-					Live_Logloss = query_pass$data$submissions[[1]]$liveLogloss
+					Validation_Correlation = query_pass$data$submissions[[1]]$validationCorrelation,
+					Live_Correlation = query_pass$data$submissions[[1]]$liveCorrelation
 					)
 	return(result)
 }
@@ -401,120 +358,22 @@ user_info <- function()
 {
 	user_info_query <-	'query user_info_query {
 							user {
-								apiTokens {
-									name
-									publicId
-									scopes
-								}
-								assignedEthAddress
-								banned
-								customEthAddresses
 								id
-								email
 								username
+								email
 								insertedAt
 								status
+								banned
 								mfaEnabled
-								latestSubmission {
-									id
-									round {
-										number
-									}
-								}
-								availableUsd
 								availableNmr
-								nmrDeposits {
-									from
-									to
-									value
-									posted
-									source
-									status
-									txHash
-								}
-								nmrWithdrawals {
-									from
-									to
-									value
-									posted
-									source
-									status
-									txHash
-								}
-								payments {
-									round {
-										number
-									}
-									nmrAmount
-									usdAmount
-									submission {
-										id
-										filename
-									}
-									tournament
-								}
-								usdWithdrawals {
-									from
-									to
-									ethAmount
-									usdAmount
-									sendTime
-									confirmTime
-									status
-									posted
-									txHash
-								}
-								stakeTxs{
-									roundNumber
-									value
-									confidence
-									status
-									insertedAt
-									soc
-									staker
-									txHash
-								}
+								availableEth
+								availableUsd
+								assignedEthAddress
+								customEthAddresses
 							}
 						}'
 
 	query_pass <- run_query(query=user_info_query)
-
-	## Cleaning functions to report result
-	clean_tokens_info <- function(x)
-	{
-		data.frame(
-						Name = x$name,
-						Public_ID = x$publicId,
-						Scopes = paste(unlist(x$scopes),collapse=", ")
-					)
-	}
-	clean_nmr_deposits <- function(x)
-	{
-		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","posted","source","txHash"),drop=FALSE])
-	}
-	clean_nmr_withdrawls <- function(x)
-	{
-		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","value","status","posted","source","txHash"),drop=FALSE])
-	}
-	clean_usd_withdrawls <- function(x)
-	{
-		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("from","to","ethAmount","usdAmount","sendTime","confirmTime","status","posted","txHash"),drop=FALSE])
-	}
-	clean_payments_data <- function(x)
-	{
-		if(length(x)==0) return(NULL)
-		payment_data <- as.data.frame(do.call(rbind,lapply(x,unlist))[,c("round.number","nmrAmount","usdAmount","tournament","submission.id","submission.filename"),drop=FALSE])
-		names(payment_data) <- c("Round_Number","NMR","USD","Tournament","Submission_ID","Submission_Filename")
-		return(payment_data)
-	}
-	clean_stake_transactions <- function(x)
-	{
-		if(length(x)==0) return(NULL)
-		return(as.data.frame(do.call(rbind,x))[,c("roundNumber","value","soc","confidence","status","insertedAt","staker","txHash"),drop=FALSE])
-	}
 
 	result <- list(
 						Email_Address = query_pass$data$user$email,
@@ -524,16 +383,9 @@ user_info <- function()
 						Current_Status = query_pass$data$user$status,
 						MFA_Enabled = query_pass$data$user$mfaEnabled,
 						Banned = query_pass$data$user$banned,
-						Api_Tokens = do.call(rbind,lapply(query_pass$data$user$apiTokens,clean_tokens_info)),
 						Assigned_ETH_Address = query_pass$data$user$assignedEthAddress,
 						Custom_ETH_Address = unlist(query_pass$data$user$customEthAddresses),
-						Latest_Submission = data.frame(Round_Number = unlist(query_pass$data$user$latestSubmission)[1], Submission_ID = unlist(query_pass$data$user$latestSubmission)[2]),
-						Balances = data.frame(USD=query_pass$data$user$availableUsd,NMR = query_pass$data$user$availableNmr),
-						NMR_Deposits = clean_nmr_deposits(query_pass$data$user$nmrDeposits),
-						NMR_Withdrawls = clean_nmr_withdrawls(query_pass$data$user$nmrWithdrawals),
-						Payments = clean_payments_data(query_pass$data$user$payments),
-						USD_Withdrawls = clean_usd_withdrawls(query_pass$data$user$usdWithdrawals),
-						Stakes_Transactions = clean_stake_transactions(query_pass$data$user$stakeTxs)
+						Balances = data.frame(USD=query_pass$data$user$availableUsd,NMR = query_pass$data$user$availableNmr)
 					)
 	return(result)
 }
@@ -541,7 +393,7 @@ user_info <- function()
 #' Get current round and it's closing time
 #'
 #' @name current_round
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
+#' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
 #' @return Returns the current round number and it's closing times
 #' @export
 #' @examples
@@ -565,34 +417,25 @@ current_round <- function(tournament="Kazutsugi")
 	return(c(Round_Number=query_pass$data$rounds[[1]]$number,Close_Time=query_pass$data$rounds[[1]]$closeTime,Close_Staking_Time=query_pass$data$rounds[[1]]$closeStakingTime))
 }
 
-#' Stake NMR on the current round and single tournament
+#' Stake NMR
 #'
 #' @name stake_nmr
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
 #' @param value The amount of NMR to stake
-#' @param confidence The confidence value to use
 #' @param mfa_code The mfa code
 #' @param password Your password
 #' @return The transaction hash for stake made
 #' @export
 #' @examples
 #' \dontrun{
-#' stake_tx_hash <- stake_nmr(tournament="Bernie",value = 1, confidence = ".5")
+#' stake_tx_hash <- stake_nmr(value = 1)
 #' }
-stake_nmr <- function(tournament="Kazutsugi",value, confidence, mfa_code = "", password = "")
+stake_nmr <- function(value, mfa_code = "", password = "")
 {
-	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
-	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
-
 	stake_query <- paste0(
 							'mutation stake_query {
-								stake(code:"',mfa_code,'"
+								v2Stake(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
-								confidence:"',confidence,'"
-								tournament :',tournament_id,'
-								round:',as.numeric(current_round()["Round_Number"]),'
 								){
 									txHash
 								}}'
@@ -601,61 +444,44 @@ stake_nmr <- function(tournament="Kazutsugi",value, confidence, mfa_code = "", p
 	return(query_pass)
 }
 
-# #' Stake NMR on the current round and multiple tournaments
-# #'
-# #' @name stake_nmr_multi
-# #' @param tournaments The vector of names of the tournaments
-# #' @param values The vector of the amounts of NMR to stake
-# #' @param confidence_vals The vector of the confidence values to use
-# #' @param mfa_code The mfa code
-# #' @param password Your password
-# #' @return The transaction hashes for stakes made
-# #' @export
-# #' @examples
-# #' \dontrun{
-# #' stake_tx_hashes <- stake_nmr_multi(tournaments=c("Bernie","Frank"),values = c(1,1), confidence_vals = c(".25",".5"))
-# #' }
-# stake_nmr_multi <- function(tournaments,values, confidence_vals, mfa_code = "", password = "")
-# {
-# 	## Error Check
-# 	if(!all(length(tournaments)==c(length(tournaments),length(values),length(confidence_vals)))) stop("tournaments, values & confidence_vals should all be of equal lengths")
-
-# 	## Loop and make individual stakes
-# 	stake_tx_hashes <- character()
-# 	idx <- 1
-# 	while(TRUE)
-# 	{
-# 		tournament <- tournaments[idx]
-# 		value <- values[idx]
-# 		confidence <- confidence_vals[idx]
-# 		stake_tx_hash <- tryCatch({
-# 									stake_nmr(tournament=tournament,value = value, confidence = confidence)
-# 									}, error=function(e) e)
-# 		if(inherits(stake_tx_hash, "error"))
-# 		{
-# 			message(paste0(stake_tx_hash$message,"\n","Retrying.."))
-# 			next()
-# 		}
-# 		stake_tx_hashes <- c(stake_tx_hashes,stake_tx_hash)
-# 		idx <- idx+1
-# 		if(idx > length(tournaments)) break()
-# 	}
-# 	names(stake_tx_hashes) <- tournaments
-# 	return(stake_tx_hashes)
-# }
-
-#' Get Information and leader board for a Round Number
+#' Release NMR
 #'
-#' @name round_stats
-#' @param round_number Round Number for which information to fetch
-#' @param tournament The name of the tournament, Default is Bernie and is not case-sensitive
-#' @return List containing general round information and leaderboard
+#' @name release_nmr
+#' @param value The amount of NMR to release
+#' @param mfa_code The mfa code
+#' @param password Your password
+#' @return The transaction hash for release request
 #' @export
 #' @examples
 #' \dontrun{
-#' round_info <- round_stats(round_number=79)
-#' round_info$round_info
-#' round_info$round_leaderboard
+#' release_tx_hash <- release_nmr(value = 1)
+#' }
+release_nmr <- function(value, mfa_code = "", password = "")
+{
+	release_query <- paste0(
+							'mutation release_query {
+								v2ReleaseStakeRequest(code:"',mfa_code,'"
+								password:"',password,'"
+								value:"',value,'"
+								){
+									txHash
+								}}'
+							)
+	query_pass <- run_query(query=release_query)
+	return(query_pass)
+}
+
+
+#' Get Information for a Round Number
+#'
+#' @name round_stats
+#' @param round_number Round Number for which information to fetch
+#' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
+#' @return List containing general round information
+#' @export
+#' @examples
+#' \dontrun{
+#' round_stats(round_number=177)
 #' }
 round_stats <- function(round_number,tournament="Kazutsugi")
 {
@@ -673,30 +499,6 @@ round_stats <- function(round_number,tournament="Kazutsugi")
 										resolvedStaking
 										closeTime
 										closeStakingTime
-										leaderboard {
-											username
-											banned
-											validationLogloss
-											consistency
-											liveLogloss
-											paymentGeneral {
-												nmrAmount
-												usdAmount
-      										}
-      										paymentStaking {
-												usdAmount
-												nmrAmount
-											}
-											stake {
-												confidence
-												value
-											}
-											stakeResolution {
-												successful
-												destroyed
-												paid
-											}
-										}
 									}}'
 								)
 	query_pass <- run_query(query=round_stats_query)
@@ -710,23 +512,44 @@ round_stats <- function(round_number,tournament="Kazutsugi")
 								Close_Staking_Time = ifelse(is.null(round_data$closeStakingTime),NA,round_data$closeStakingTime),
 								If_Resolved = round_data$resolvedGeneral
   							)
-	round_lb <- query_pass$data$rounds[[1]]$leaderboard
-	result_leaderboard <- data.frame(
-										Username = sapply(round_lb,function(x) x$username),
-										Banned = sapply(round_lb,function(x) x$banned),
-										Live_Logloss = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$liveLogloss),0,x$liveLogloss))),
-										Validation_Logloss = sapply(round_lb,function(x) ifelse(is.null(x$validationLogloss),NA,x$validationLogloss)),
-										Consistency = sapply(round_lb,function(x) ifelse(is.null(x$consistency),NA,x$consistency)),
-										Paid_USD = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$usdAmount),0,x$paymentGeneral$usdAmount))),
-										Paid_NMR = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$nmrAmount),0,x$paymentGeneral$nmrAmount))),
-										Stake_Amount = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stake$value),0,x$stake$value))),
-										Stake_Confidence = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$stake$confidence),NA,x$stake$confidence))),
-										Stake_Success = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$successful),NA,x$stakeResolution$successful)),
-										Stake_Destroyed = sapply(round_lb,function(x) ifelse(is.null(x$stakeResolution$destroyed),NA,x$stakeResolution$destroyed)),
-										Stake_Paid = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$usdAmount),0,x$paymentStaking$usdAmount))),
-										Stake_Paid_NMR = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$nmrAmount),0,x$paymentStaking$nmrAmount))),
-										Paid_USD_Total = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$usdAmount),0,x$paymentGeneral$usdAmount)))+as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$usdAmount),0,x$paymentStaking$usdAmount))),
-										Paid_NMR_Total = as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentGeneral$nmrAmount),0,x$paymentGeneral$nmrAmount)))+as.numeric(sapply(round_lb,function(x) ifelse(is.null(x$paymentStaking$nmrAmount),0,x$paymentStaking$nmrAmount)))
-									)
-	return(list(round_info = result_info , round_leaderboard = result_leaderboard))
+
+	return(result_info)
+}
+
+#' Get Current leaderboard
+#'
+#' @name leaderboard
+#' @return List containing leaderboard
+#' @export
+#' @examples
+#' \dontrun{
+#' leaderboard()
+#' }
+leaderboard <- function()
+{
+	leaderboard_query <- paste0(
+									'query leaderboard_query {
+									v2Leaderboard{
+										bonusPerc
+										nmrStaked
+										prevRank
+										rank
+										reputation
+										tier
+										username
+									}}'
+								)
+	query_pass <- run_query(query=leaderboard_query)
+
+	result_info <- data.frame(
+								Username = sapply(query_pass$data$v2Leaderboard,"[[",1),
+								Tier = sapply(query_pass$data$v2Leaderboard,"[[",2),
+								Reputation = sapply(query_pass$data$v2Leaderboard,"[[",3),
+								Rank = sapply(query_pass$data$v2Leaderboard,"[[",4),
+								Previous_Rank = sapply(query_pass$data$v2Leaderboard,"[[",5),
+								NMR_Staked = sapply(query_pass$data$v2Leaderboard,"[[",6),
+								Bonus_Percentage = sapply(query_pass$data$v2Leaderboard,"[[",7)
+  							)
+
+	return(result_info)
 }

@@ -102,7 +102,12 @@ Get V2 Leaderboard
 
 -   `leaderboard()`
 
-### 5. Run Custom GraphQL code from R:
+### 5. Get User Performance
+Get V2 User Profile 
+
+-   `user_performance(username="theomniacs")`
+
+### 6. Run Custom GraphQL code from R:
 
 -   `custom_query <- 'query queryname {
     					rounds (number:177) {

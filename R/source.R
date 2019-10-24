@@ -553,3 +553,66 @@ leaderboard <- function()
 
 	return(result_info)
 }
+
+#' Get User Performance
+#'
+#' @name user_performance
+#' @param user_name UserName for which performance metrics to get
+#' @return Get User Performance
+#' @export
+#' @examples
+#' \dontrun{
+#' user_performance(user_name="theomniacs")
+#' }
+user_performance <- function(user_name="theomniacs")
+{
+	user_query <- paste0(
+									'query user_query {
+									v2UserProfile(username:"',user_name,'"){
+										dailyUserPerformances {
+											averageCorrelation
+      										averageCorrelationPayout
+      										date
+      										leaderboardBonus
+      										rank
+      										reputation
+      										stakeValue
+      										tier
+										}
+										dailySubmissionPerformances {
+											correlation
+      										date
+      										roundNumber
+      									}
+      									historicalNetNmrEarnings
+      									historicalNetUsdEarnings
+      									netEarnings
+
+									}}'
+								)
+	query_pass <- run_query(query=user_query)
+
+	user_performance <- data.frame(
+								Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",6),
+								Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",1),
+								Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",3),
+								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",4),
+								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[2]]),NA,x[[2]])),
+								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[5]]),NA,x[[5]])),
+								Average_Correlation_Payout = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[7]]),NA,x[[7]])),
+								Average_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[8]]),NA,x[[8]]))
+  							)
+	submission_performance <- data.frame(
+								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[",1),
+								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[",2),
+								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[[3]]),NA,x[[3]]))
+  							)
+
+	return(list(User_Performance = user_performance,
+					Submission_Performance=submission_performance,
+					Net_Earnings = query_pass$data$v2UserProfile$netEarnings,
+					Historical_Net_Earnings_USD = query_pass$data$v2UserProfile$historicalNetUsdEarnings,
+					Historical_Net_Earnings_NMR = query_pass$data$v2UserProfile$historicalNetNmrEarnings
+				))
+
+}

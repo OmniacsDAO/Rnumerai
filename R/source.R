@@ -537,6 +537,7 @@ leaderboard <- function()
 										reputation
 										tier
 										username
+										stakedRank
 									}}'
 								)
 	query_pass <- run_query(query=leaderboard_query)
@@ -544,11 +545,12 @@ leaderboard <- function()
 	result_info <- data.frame(
 								Username = sapply(query_pass$data$v2Leaderboard,"[[",1),
 								Tier = sapply(query_pass$data$v2Leaderboard,"[[",2),
-								Reputation = sapply(query_pass$data$v2Leaderboard,"[[",3),
-								Rank = sapply(query_pass$data$v2Leaderboard,"[[",4),
-								Previous_Rank = sapply(query_pass$data$v2Leaderboard,"[[",5),
-								NMR_Staked = sapply(query_pass$data$v2Leaderboard,"[[",6),
-								Bonus_Percentage = sapply(query_pass$data$v2Leaderboard,"[[",7)
+								Staked_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[[3]]),NA,x[[3]])),
+								Reputation = sapply(query_pass$data$v2Leaderboard,"[[",4),
+								Rank = sapply(query_pass$data$v2Leaderboard,"[[",5),
+								Previous_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[[6]]),NA,x[[6]])),
+								NMR_Staked = sapply(query_pass$data$v2Leaderboard,"[[",7),
+								Bonus_Percentage = sapply(query_pass$data$v2Leaderboard,"[[",8)
   							)
 
 	return(result_info)
@@ -587,7 +589,7 @@ user_performance <- function(user_name="theomniacs")
       									historicalNetNmrEarnings
       									historicalNetUsdEarnings
       									netEarnings
-
+      									totalStake
 									}}'
 								)
 	query_pass <- run_query(query=user_query)
@@ -599,7 +601,7 @@ user_performance <- function(user_name="theomniacs")
 								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",4),
 								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[2]]),NA,x[[2]])),
 								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[5]]),NA,x[[5]])),
-								Average_Correlation_Payout = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[7]]),NA,x[[7]])),
+								Average_Correlation_Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[7]]),NA,x[[7]])),
 								Average_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[8]]),NA,x[[8]]))
   							)
 	submission_performance <- data.frame(

@@ -543,14 +543,14 @@ leaderboard <- function()
 	query_pass <- run_query(query=leaderboard_query)
 
 	result_info <- data.frame(
-								Username = sapply(query_pass$data$v2Leaderboard,"[[",1),
-								Tier = sapply(query_pass$data$v2Leaderboard,"[[",2),
-								Staked_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[[3]]),NA,x[[3]])),
-								Reputation = sapply(query_pass$data$v2Leaderboard,"[[",4),
-								Rank = sapply(query_pass$data$v2Leaderboard,"[[",5),
-								Previous_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[[6]]),NA,x[[6]])),
-								NMR_Staked = sapply(query_pass$data$v2Leaderboard,"[[",7),
-								Bonus_Percentage = sapply(query_pass$data$v2Leaderboard,"[[",8)
+								Username = sapply(query_pass$data$v2Leaderboard,"[[","username"),
+								Tier = sapply(query_pass$data$v2Leaderboard,"[[","tier"),
+								Staked_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[["stakedRank"]]),NA,x[["stakedRank"]])),
+								Reputation = sapply(query_pass$data$v2Leaderboard,"[[","reputation"),
+								Rank = sapply(query_pass$data$v2Leaderboard,"[[","rank"),
+								Previous_Rank = sapply(query_pass$data$v2Leaderboard,function(x) ifelse(is.null(x[["prevRank"]]),NA,x[["prevRank"]])),
+								NMR_Staked = sapply(query_pass$data$v2Leaderboard,"[[","nmrStaked"),
+								Bonus_Percentage = sapply(query_pass$data$v2Leaderboard,"[[","bonusPerc")
   							)
 
 	return(result_info)
@@ -570,7 +570,7 @@ user_performance <- function(user_name="theomniacs")
 {
 	user_query <- paste0(
 									'query user_query {
-									v2UserProfile(username:"',user_name,'"){
+									v2UserProfile(username:"',tolower(user_name),'"){
 										dailyUserPerformances {
 											averageCorrelation
       										averageCorrelationPayout
@@ -595,19 +595,19 @@ user_performance <- function(user_name="theomniacs")
 	query_pass <- run_query(query=user_query)
 
 	user_performance <- data.frame(
-								Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",6),
-								Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",1),
-								Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",3),
-								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[",4),
-								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[2]]),NA,x[[2]])),
-								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[5]]),NA,x[[5]])),
-								Average_Correlation_Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[7]]),NA,x[[7]])),
-								Average_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[[8]]),NA,x[[8]]))
+								Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","date"),
+								Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","tier"),
+								Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","reputation"),
+								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","rank"),
+								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]])),
+								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["leaderboardBonus"]]),NA,x[["leaderboardBonus"]])),
+								Average_Correlation_Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelationPayout"]]),NA,x[["averageCorrelationPayout"]])),
+								Average_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelation"]]),NA,x[["averageCorrelation"]]))
   							)
 	submission_performance <- data.frame(
-								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[",1),
-								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[",2),
-								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[[3]]),NA,x[[3]]))
+								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
+								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","date"),
+								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]]))
   							)
 
 	return(list(User_Performance = user_performance,

@@ -14,7 +14,7 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Omni-Analytics-Group/Rnumerai
 BugReports: https://github.com/Omni-Analytics-Group/Rnumerai/issues
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Imports:
   httr,
   lubridate

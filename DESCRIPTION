@@ -1,6 +1,6 @@
 Package: Rnumerai
 Title: Interface to the Numerai Machine Learning Tournament API
-Version: 0.9
+Version: 0.9.9000
 Authors@R: c(
     person("Omni Analytics Group", email = "services@omnianalytics.io", role = "aut"),
     person("Eric Hare", email = "eric@omnianalytics.io", role = "cre"))
@@ -17,4 +17,6 @@ BugReports: https://github.com/Omni-Analytics-Group/Rnumerai/issues
 RoxygenNote: 7.0.2
 Imports:
   httr,
-  lubridate
+  lubridate,
+  dplyr,
+  ggplot2

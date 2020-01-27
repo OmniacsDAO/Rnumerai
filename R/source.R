@@ -618,3 +618,65 @@ user_performance <- function(user_name="theomniacs")
 				))
 
 }
+
+#' Get the performance of the user over time
+#'
+#' @name performance_over_time
+#' 
+#' @export
+#' 
+#' @import dplyr
+#'
+user_performance_data <- function(username) {
+    ## Prepare data set and preformatiing
+    data <- lapply(username, function(usr) {
+        mylst <- user_performance(usr)
+        mylst$Username <- usr
+        
+        return(mylst)
+    })
+    
+    final_data <- lapply(data, function(x) {
+        x$User_Performance %>%
+            mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
+            mutate(Username = x$Username)
+    }) %>%
+        bind_rows() %>%
+        mutate(Date = ymd_hms(Date))
+    
+    return(final_data)
+}
+
+#' Get the performance of the user over time
+#'
+#' @name performance_over_time
+#' 
+#' @export
+#' 
+#' @import ggplot2
+#'
+performance_over_time <- function(username, metric)
+{
+    ggplot(data = user_performance_data(username), aes_string(x = "Date", y = metric, colour = "Username")) +
+        geom_point() +
+        geom_line() +
+        ylab(tools::toTitleCase(gsub("_", " ", metric))) +
+        theme_bw()
+}
+
+#' Get the performance of the user as a distribution
+#'
+#' @name performance_distribution
+#' 
+#' @export
+#' 
+#' @import ggplot2
+#'
+performance_distribution <- function(username, metric)
+{
+    ggplot(data = user_performance_data(username), aes_string(x = metric, fill = "Username")) +
+        geom_histogram(colour = "grey60") +
+        xlab(tools::toTitleCase(gsub("_", " ", metric))) +
+        ylab("Number of Models") +
+        theme_bw()
+} 

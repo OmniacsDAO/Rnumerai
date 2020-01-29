@@ -627,7 +627,7 @@ user_performance <- function(user_name="theomniacs")
 #'
 #' @import dplyr
 #'
-user_performance_data <- function(username) {
+user_performance_data <- function(username, dates = NULL) {
     ## Prepare data set and preformatiing
     data <- lapply(username, function(usr) {
         mylst <- user_performance(usr)
@@ -643,6 +643,11 @@ user_performance_data <- function(username) {
     }) %>%
         bind_rows() %>%
         mutate(Date = ymd_hms(Date))
+
+    if (!is.null(dates)) {
+        final_data <- final_data %>%
+            filter(Date %in% dates)
+    }
 
     return(final_data)
 }
@@ -704,4 +709,27 @@ performance_distribution <- function(username, metric, merge = FALSE)
         ylab("Number of Models") +
         theme_bw() +
         facet_wrap(~Username, nrow=length(username))
+}
+
+summary_statistics <- function(username, dates = NULL) {
+    hist_data <- user_performance_data(username, dates)
+
+    summary_stat <- hist_data %>%
+        group_by(Username) %>%
+        summarise(`Total Staked` = sum(NMR_Staked, na.rm = TRUE),
+                  `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
+                  `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE))
+
+    if (length(username) == 1) return(summary_stat)
+
+    cc_stat <- hist_data %>%
+        select(Date, Username, NMR_Staked, Leaderboard_Bonus, Average_Correlation_Payout_NMR) %>%
+        gather(key = Variable, value = Value, 3:ncol(.)) %>%
+        spread(key = Username, value = Value) %>%
+        split(.$Variable) %>%
+        map(.f = function(x) cor(x[,-(1:2)], use = "pairwise.complete.obs"))
+
+    return(list(stats = summary_stat,
+                corrs = cc_stat))
+
 }

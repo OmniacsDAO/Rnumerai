@@ -618,3 +618,90 @@ user_performance <- function(user_name="theomniacs")
 				))
 
 }
+
+#' Get the performance of the user over time
+#'
+#' @name performance_over_time
+#'
+#' @export
+#'
+#' @import dplyr
+#'
+user_performance_data <- function(username) {
+    ## Prepare data set and preformatiing
+    data <- lapply(username, function(usr) {
+        mylst <- user_performance(usr)
+        mylst$Username <- usr
+
+        return(mylst)
+    })
+
+    final_data <- lapply(data, function(x) {
+        x$User_Performance %>%
+            mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
+            mutate(Username = x$Username)
+    }) %>%
+        bind_rows() %>%
+        mutate(Date = ymd_hms(Date))
+
+    return(final_data)
+}
+
+#' Get the performance of the user over time
+#'
+#' @name performance_over_time
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#'
+performance_over_time <- function(username, metric, merge = FALSE)
+{
+    time_data <- user_performance_data(username)
+
+    if (merge) {
+        time_data <- time_data %>%
+            group_by(Date) %>%
+            summarise(
+                NMR_Staked = sum(NMR_Staked),
+                Leaderboard_Bonus = sum(Leaderboard_Bonus),
+                Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
+                Reputation = mean(Reputation),
+                Average_Correlation = mean(Average_Correlation),
+                Username = "multiple"
+            )
+    }
+
+    ggplot(data = time_data, aes_string(x = "Date", y = metric, colour = "Username")) +
+        geom_point() +
+        geom_line() +
+        ylab(tools::toTitleCase(gsub("_", " ", metric))) +
+        theme_bw()
+}
+
+#' Get the performance of the user as a distribution
+#'
+#' @name performance_distribution
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#'
+performance_distribution <- function(username, metric, merge = FALSE)
+{
+    hist_data <- user_performance_data(username)
+
+    if (merge) {
+        hist_data <- hist_data %>%
+            mutate(Username = "multiple")
+    }
+
+    ggplot(data = hist_data, aes_string(x = metric, fill = "Username")) +
+        geom_histogram(colour = "grey60") +
+        xlab(tools::toTitleCase(gsub("_", " ", metric))) +
+        ylab("Number of Models") +
+        theme_bw() +
+        facet_wrap(~Username, nrow=length(username))
+}

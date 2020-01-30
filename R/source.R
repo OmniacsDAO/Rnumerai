@@ -713,6 +713,8 @@ performance_over_time <- function(username, metric, merge = FALSE)
 #'
 performance_distribution <- function(username, metric, merge = FALSE)
 {
+    Username <- Relevant <- NULL
+
     hist_data <- user_performance_data(username)
 
     if (merge) {
@@ -720,8 +722,15 @@ performance_distribution <- function(username, metric, merge = FALSE)
             mutate(Username = "multiple")
     }
 
+    hist_avg <- hist_data %>%
+        mutate(Relevant = hist_data[[metric]]) %>%
+        group_by(Username) %>%
+        summarise(Relevant = mean(Relevant, na.rm = TRUE))
+
+
     ggplot(data = hist_data, aes_string(x = metric, fill = "Username")) +
         geom_histogram(colour = "grey60") +
+        geom_vline(data = hist_avg, aes(xintercept = Relevant), linetype = "dashed") +
         xlab(tools::toTitleCase(gsub("_", " ", metric))) +
         ylab("Number of Models") +
         theme_bw() +

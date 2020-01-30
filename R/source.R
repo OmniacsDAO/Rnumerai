@@ -645,6 +645,7 @@ user_performance_data <- function(username, dates = NULL) {
     final_data <- lapply(data, function(x) {
         x$User_Performance %>%
             mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
+            mutate_if(is.factor, as.character) %>%
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%
@@ -755,14 +756,14 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #'
 summary_statistics <- function(username, dates = NULL) {
     Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
-    Leaderboard_Bonus <- `.` <- NULL
+    Leaderboard_Bonus <- `.` <- `Total Payout` <- NULL
 
     hist_data <- user_performance_data(username, dates)
 
     summary_stat <- hist_data %>%
         group_by(Username) %>%
-        summarise(`Total Staked` = sum(NMR_Staked, na.rm = TRUE),
-                  `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
+        summarise(`Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
+                  `Total Staked` = NMR_Staked[1] - `Total Payout`,
                   `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE))
 
     if (length(username) == 1) return(summary_stat)

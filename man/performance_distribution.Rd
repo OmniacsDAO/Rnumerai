@@ -4,7 +4,14 @@
 \alias{performance_distribution}
 \title{Get the performance of the user as a distribution}
 \usage{
-performance_distribution(username, metric)
+performance_distribution(username, metric, merge = FALSE)
+}
+\arguments{
+\item{username}{A vector of one or more usernames}
+
+\item{metric}{A statistic, as a character vector.}
+
+\item{merge}{If TRUE, combine the usernames into a single result}
 }
 \description{
 Get the performance of the user as a distribution

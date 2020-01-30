@@ -190,7 +190,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' @param tournament The name of the tournament, Default is KAZUTSUGI and is not case-sensitive. Since at the moment the datasets are same for all tournaments this parameter can be left blank.
 #' @return A list containing the training and tournament data objects
 #' @export
-#' @import lubridate
+#' @importFrom lubridate today
 #' @import httr
 #' @importFrom utils unzip
 #' @importFrom utils read.csv
@@ -240,7 +240,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
 #' @return The submission id for the submission made
 #' @export
-#' @import lubridate
+#' @importFrom lubridate today
 #' @import httr
 #' @importFrom utils write.csv
 #' @examples
@@ -621,13 +621,19 @@ user_performance <- function(user_name="theomniacs")
 
 #' Get the performance of the user over time
 #'
-#' @name performance_over_time
+#' @name user_performance_data
+#'
+#' @param username A vector of one or more usernames
+#' @param dates A vector of one or more dates to consider. If NULL, use all data
 #'
 #' @export
 #'
 #' @import dplyr
+#' @importFrom lubridate ymd_hms
 #'
 user_performance_data <- function(username, dates = NULL) {
+    Reputation <- Average_Correlation <- Date <- NULL
+
     ## Prepare data set and preformatiing
     data <- lapply(username, function(usr) {
         mylst <- user_performance(usr)
@@ -656,6 +662,10 @@ user_performance_data <- function(username, dates = NULL) {
 #'
 #' @name performance_over_time
 #'
+#' @param username A vector of one or more usernames
+#' @param metric A statistic, as a character vector.
+#' @param merge If TRUE, combine the usernames into a single result
+#'
 #' @export
 #'
 #' @import ggplot2
@@ -663,6 +673,9 @@ user_performance_data <- function(username, dates = NULL) {
 #'
 performance_over_time <- function(username, metric, merge = FALSE)
 {
+    Date <- NMR_Staked <- Leaderboard_Bonus <- Average_Correlation_Payout_NMR <- NULL
+    Average_Correlation <- Reputation <- NULL
+
     time_data <- user_performance_data(username)
 
     if (merge) {
@@ -689,6 +702,10 @@ performance_over_time <- function(username, metric, merge = FALSE)
 #'
 #' @name performance_distribution
 #'
+#' @param username A vector of one or more usernames
+#' @param metric A statistic, as a character vector.
+#' @param merge If TRUE, combine the usernames into a single result
+#'
 #' @export
 #'
 #' @import ggplot2
@@ -711,7 +728,26 @@ performance_distribution <- function(username, metric, merge = FALSE)
         facet_wrap(~Username, nrow=length(username))
 }
 
+#' Get the summary statistics for
+#'
+#' @name summary_statistics
+#'
+#' @param username A vector of one or more usernames
+#' @param dates A vector of one or more dates to consider. If NULL, use all data
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom purrr map
+#' @importFrom stats cor
+#' @importFrom tidyr gather
+#' @importFrom tidyr spread
+#'
 summary_statistics <- function(username, dates = NULL) {
+    Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
+    Leaderboard_Bonus <- `.` <- NULL
+
     hist_data <- user_performance_data(username, dates)
 
     summary_stat <- hist_data %>%

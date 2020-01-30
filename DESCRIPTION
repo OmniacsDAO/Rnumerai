@@ -19,4 +19,6 @@ Imports:
   httr,
   lubridate,
   dplyr,
-  ggplot2
+  tidyr,
+  ggplot2,
+  purrr

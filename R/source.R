@@ -644,8 +644,8 @@ user_performance_data <- function(username, dates = NULL) {
 
     final_data <- lapply(data, function(x) {
         x$User_Performance %>%
-            mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
             mutate_if(is.factor, as.character) %>%
+            mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%

@@ -4,7 +4,12 @@
 \alias{performance_over_time}
 \title{Get the performance of the user over time}
 \usage{
-performance_over_time(username, metric, merge = FALSE)
+performance_over_time(
+  username,
+  metric,
+  merge = FALSE,
+  outlier_cutoff = 1.25e-02
+)
 }
 \arguments{
 \item{username}{A vector of one or more usernames}
@@ -12,6 +17,8 @@ performance_over_time(username, metric, merge = FALSE)
 \item{metric}{A statistic, as a character vector.}
 
 \item{merge}{If TRUE, combine the usernames into a single result}
+
+\item{outlier_cutoff}{The absolute value above which points will be displayed}
 }
 \description{
 Get the performance of the user over time

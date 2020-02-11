@@ -585,6 +585,8 @@ user_performance <- function(user_name="theomniacs")
 											correlation
       										date
       										roundNumber
+      										mmc
+      										correlationWithMetamodel
       									}
       									historicalNetNmrEarnings
       									historicalNetUsdEarnings
@@ -607,7 +609,9 @@ user_performance <- function(user_name="theomniacs")
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
 								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","date"),
-								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]]))
+								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]])),
+								MMC = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["mmc"]]),NA,x[["mmc"]])),
+								Correlation_With_MM = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlationWithMetamodel"]]),NA,x[["correlationWithMetamodel"]]))
   							)
 
 	return(list(User_Performance = user_performance,
@@ -633,6 +637,7 @@ user_performance <- function(user_name="theomniacs")
 #'
 user_performance_data <- function(username, dates = NULL) {
     Reputation <- Average_Correlation <- Date <- NULL
+    Correlation <- Correlation_With_MM <- NULL
 
     ## Prepare data set and preformatiing
     data <- lapply(username, function(usr) {
@@ -642,7 +647,7 @@ user_performance_data <- function(username, dates = NULL) {
         return(mylst)
     })
 
-    final_data <- lapply(data, function(x) {
+    user_data <- lapply(data, function(x) {
         x$User_Performance %>%
             mutate_if(is.factor, as.character) %>%
             mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
@@ -651,34 +656,66 @@ user_performance_data <- function(username, dates = NULL) {
         bind_rows() %>%
         mutate(Date = ymd_hms(Date))
 
+    submission_data <- lapply(data, function(x) {
+        x$Submission_Performance %>%
+            mutate_if(is.factor, as.character) %>%
+            mutate_at(vars(Correlation:Correlation_With_MM), as.numeric) %>%
+            mutate(Username = x$Username)
+    }) %>%
+        bind_rows() %>%
+        mutate(Date = ymd_hms(Date))
+
     if (!is.null(dates)) {
-        final_data <- final_data %>%
+        user_data <- user_data %>%
+            mutate(Date = as_date(Date)) %>%
+            filter(Date %in% dates)
+        submission_data <- submission_data %>%
+            mutate(Date = as_date(Date)) %>%
             filter(Date %in% dates)
     }
 
-    return(final_data)
+    return(list(user_data = user_data, submission_data = submission_data))
 }
 
-#' Get the performance of the user over time
+#' Get the performance of the user over time aggregated
 #'
-#' @name performance_over_time
+#' @name binded_user_data
 #'
 #' @param username A vector of one or more usernames
-#' @param metric A statistic, as a character vector.
-#' @param merge If TRUE, combine the usernames into a single result
+#' @param dates A vector of dates to consider
+#' @param merge Whether to merge multiple usernames into one
 #'
 #' @export
 #'
-#' @import ggplot2
 #' @import dplyr
-#' @importFrom lubridate as_date
 #'
-performance_over_time <- function(username, metric, merge = FALSE)
-{
-    Date <- NMR_Staked <- Leaderboard_Bonus <- Average_Correlation_Payout_NMR <- NULL
-    Average_Correlation <- Reputation <- NULL
+binded_user_data <- function(username, dates = NULL, merge = FALSE) {
+    Username <- Date <- NMR_Staked <- Leaderboard_Bonus <- NULL
+    Average_Correlation_Payout_NMR <- Reputation <- Average_Correlation <- NULL
+    Correlation <- MMC <- Correlation_With_MM <- NULL
 
-    time_data <- user_performance_data(username) %>%
+    time_data <- user_performance_data(username, dates = dates)
+
+    user_data <- time_data$user_data %>%
+        group_by(Username, Date) %>%
+        summarise(
+            NMR_Staked = sum(NMR_Staked),
+            Leaderboard_Bonus = sum(Leaderboard_Bonus),
+            Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
+            Reputation = mean(Reputation),
+            Average_Correlation = mean(Average_Correlation)
+        )
+    sub_data <- time_data$submission_data %>%
+        group_by(Username, Date) %>%
+        summarise(
+            Correlation = mean(Correlation),
+            MMC = mean(MMC),
+            Correlation_With_MM = mean(Correlation_With_MM)
+        )
+
+    time_data <- user_data %>%
+        left_join(sub_data) %>%
+        ungroup() %>%
         mutate(Date = as_date(Date))
 
     if (merge) {
@@ -689,15 +726,44 @@ performance_over_time <- function(username, metric, merge = FALSE)
                 Leaderboard_Bonus = sum(Leaderboard_Bonus),
                 Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
                 Reputation = mean(Reputation),
-                Average_Correlation = mean(Average_Correlation),
+                Correlation = mean(Correlation),
+                MMC = mean(MMC),
+                Correlation_With_MM = mean(Correlation_With_MM),
                 Username = "multiple"
             )
     }
 
-    ggplot(data = time_data, aes_string(x = "Date", y = metric, colour = "Username")) +
-        geom_point() +
-        geom_line() +
-        geom_hline(yintercept = 0) +
+    return(time_data)
+}
+
+#' Get the performance of the user over time
+#'
+#' @name performance_over_time
+#'
+#' @param username A vector of one or more usernames
+#' @param metric A statistic, as a character vector.
+#' @param merge If TRUE, combine the usernames into a single result
+#' @param outlier_cutoff The absolute value above which points will be displayed
+#'
+#' @export
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom lubridate as_date
+#'
+performance_over_time <- function(username, metric, merge = FALSE, outlier_cutoff = .0125)
+{
+    Relevant <- NULL
+
+    time_data <- binded_user_data(username, merge = merge) %>%
+        mutate(Relevant = time_data[[metric]])
+
+    outlier_data <- time_data %>%
+        filter(abs(Relevant) >= outlier_cutoff)
+
+    ggplot(data = time_data %>% filter(!is.na(Relevant)), aes_string(x = "Date", y = metric, colour = "Username")) +
+        geom_smooth() +
+        geom_point(data = outlier_data, size = 2) +
         scale_x_date(date_breaks = "1 months", date_labels = "%b %y") +
         ylab(tools::toTitleCase(gsub("_", " ", metric))) +
         theme_bw()
@@ -720,7 +786,8 @@ performance_distribution <- function(username, metric, merge = FALSE)
 {
     Username <- Relevant <- NULL
 
-    hist_data <- user_performance_data(username)
+    hist_data <- binded_user_data(username, merge = merge) %>%
+        mutate(Relevant = hist_data[[metric]])
 
     if (merge) {
         hist_data <- hist_data %>%
@@ -728,7 +795,6 @@ performance_distribution <- function(username, metric, merge = FALSE)
     }
 
     hist_avg <- hist_data %>%
-        mutate(Relevant = hist_data[[metric]]) %>%
         group_by(Username) %>%
         summarise(Relevant = mean(Relevant, na.rm = TRUE))
 
@@ -745,7 +811,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
     ggplot(data = hist_data, aes_string(x = metric, fill = "Username")) +
         geom_histogram(colour = "grey60") +
         geom_vline(data = hist_avg, aes(xintercept = Relevant), linetype = "dashed") +
-        geom_label(data = hist_avg, vjust = 1.1, hjust = -0.1, aes(x = Relevant, y = Inf, label = round(Relevant, digits = 2))) +
+        geom_label(data = hist_avg, vjust = 1.1, hjust = -0.1, aes(x = -Inf, y = Inf, label = round(Relevant, digits = 4))) +
         scale_x_continuous(breaks = step_size(metric)) +
         xlab(tools::toTitleCase(gsub("_", " ", metric))) +
         ylab("Number of Models") +
@@ -771,9 +837,9 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #'
 summary_statistics <- function(username, dates = NULL) {
     Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
-    Leaderboard_Bonus <- `.` <- `Total Payout` <- Average_Correlation <- NULL
+    Leaderboard_Bonus <- `.` <- Average_Correlation <- Correlation_With_MM <- MMC <- NULL
 
-    hist_data <- user_performance_data(username, dates)
+    hist_data <- binded_user_data(username, dates = dates)
 
     summary_stat <- hist_data %>%
         group_by(Username) %>%
@@ -781,7 +847,9 @@ summary_statistics <- function(username, dates = NULL) {
                   `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
                   `Average Payout` = mean(Average_Correlation_Payout_NMR, na.rm = TRUE),
                   `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE),
-                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE))
+                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE),
+                  `Average MMC` = mean(MMC, na.rm = TRUE),
+                  `Average Correlation With MM` = mean(Correlation_With_MM, na.rm = TRUE))
 
     if (length(username) == 1) return(summary_stat)
 

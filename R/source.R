@@ -671,13 +671,15 @@ user_performance_data <- function(username, dates = NULL) {
 #'
 #' @import ggplot2
 #' @import dplyr
+#' @importFrom lubridate as_date
 #'
 performance_over_time <- function(username, metric, merge = FALSE)
 {
     Date <- NMR_Staked <- Leaderboard_Bonus <- Average_Correlation_Payout_NMR <- NULL
     Average_Correlation <- Reputation <- NULL
 
-    time_data <- user_performance_data(username)
+    time_data <- user_performance_data(username) %>%
+        mutate(Date = as_date(Date))
 
     if (merge) {
         time_data <- time_data %>%
@@ -695,6 +697,8 @@ performance_over_time <- function(username, metric, merge = FALSE)
     ggplot(data = time_data, aes_string(x = "Date", y = metric, colour = "Username")) +
         geom_point() +
         geom_line() +
+        geom_hline(yintercept = 0) +
+        scale_x_date(date_breaks = "1 months", date_labels = "%b %y") +
         ylab(tools::toTitleCase(gsub("_", " ", metric))) +
         theme_bw()
 }
@@ -728,10 +732,21 @@ performance_distribution <- function(username, metric, merge = FALSE)
         group_by(Username) %>%
         summarise(Relevant = mean(Relevant, na.rm = TRUE))
 
+    step_size <- function(metric) {
+        if (metric %in% c("Average_Correlation")) {
+            function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .01)
+        } else if (metric == "Reputation") {
+            function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .1)
+        } else {
+            function(y) y
+        }
+    }
 
     ggplot(data = hist_data, aes_string(x = metric, fill = "Username")) +
         geom_histogram(colour = "grey60") +
         geom_vline(data = hist_avg, aes(xintercept = Relevant), linetype = "dashed") +
+        geom_label(data = hist_avg, vjust = 1.1, hjust = -0.1, aes(x = Relevant, y = Inf, label = round(Relevant, digits = 2))) +
+        scale_x_continuous(breaks = step_size(metric)) +
         xlab(tools::toTitleCase(gsub("_", " ", metric))) +
         ylab("Number of Models") +
         theme_bw() +
@@ -756,20 +771,22 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #'
 summary_statistics <- function(username, dates = NULL) {
     Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
-    Leaderboard_Bonus <- `.` <- `Total Payout` <- NULL
+    Leaderboard_Bonus <- `.` <- `Total Payout` <- Average_Correlation <- NULL
 
     hist_data <- user_performance_data(username, dates)
 
     summary_stat <- hist_data %>%
         group_by(Username) %>%
-        summarise(`Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
-                  `Total Staked` = NMR_Staked[1] - `Total Payout`,
-                  `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE))
+        summarise(`Current Amount Staked` = NMR_Staked[1],
+                  `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
+                  `Average Payout` = mean(Average_Correlation_Payout_NMR, na.rm = TRUE),
+                  `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE),
+                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE))
 
     if (length(username) == 1) return(summary_stat)
 
     cc_stat <- hist_data %>%
-        select(Date, Username, NMR_Staked, Leaderboard_Bonus, Average_Correlation_Payout_NMR) %>%
+        select(Date, Username, Average_Correlation) %>%
         gather(key = Variable, value = Value, 3:ncol(.)) %>%
         spread(key = Username, value = Value) %>%
         split(.$Variable) %>%

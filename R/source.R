@@ -753,10 +753,10 @@ binded_user_data <- function(username, dates = NULL, merge = FALSE) {
 #'
 performance_over_time <- function(username, metric, merge = FALSE, outlier_cutoff = .0125)
 {
-    Relevant <- NULL
+    Relevant <- `.` <- NULL
 
     time_data <- binded_user_data(username, merge = merge) %>%
-        mutate(Relevant = time_data[[metric]])
+        mutate(Relevant = .[[metric]])
 
     outlier_data <- time_data %>%
         filter(abs(Relevant) >= outlier_cutoff)

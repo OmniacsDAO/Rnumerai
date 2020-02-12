@@ -787,7 +787,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
     Username <- Relevant <- NULL
 
     hist_data <- binded_user_data(username, merge = merge) %>%
-        mutate(Relevant = hist_data[[metric]])
+        mutate(Relevant = .[[metric]])
 
     if (merge) {
         hist_data <- hist_data %>%
@@ -796,7 +796,8 @@ performance_distribution <- function(username, metric, merge = FALSE)
 
     hist_avg <- hist_data %>%
         group_by(Username) %>%
-        summarise(Relevant = mean(Relevant, na.rm = TRUE))
+        summarise(Relevant = mean(Relevant, na.rm = TRUE)) %>%
+        mutate(Label = paste0("Avg: ", round(Relevant, digits = 4)))
 
     step_size <- function(metric) {
         if (metric %in% c("Average_Correlation")) {
@@ -811,7 +812,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
     ggplot(data = hist_data, aes_string(x = metric, fill = "Username")) +
         geom_histogram(colour = "grey60") +
         geom_vline(data = hist_avg, aes(xintercept = Relevant), linetype = "dashed") +
-        geom_label(data = hist_avg, vjust = 1.1, hjust = -0.1, aes(x = -Inf, y = Inf, label = round(Relevant, digits = 4))) +
+        geom_label(data = hist_avg, vjust = 1.1, hjust = -0.1, aes(x = -Inf, y = Inf, label = Label), show.legend = FALSE) +
         scale_x_continuous(breaks = step_size(metric)) +
         xlab(tools::toTitleCase(gsub("_", " ", metric))) +
         ylab("Number of Models") +

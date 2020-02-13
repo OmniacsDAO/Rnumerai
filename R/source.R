@@ -654,7 +654,7 @@ user_performance_data <- function(username, dates = NULL) {
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%
-        mutate(Date = ymd_hms(Date))
+        mutate(Date = as_date(ymd_hms(Date)))
 
     submission_data <- lapply(data, function(x) {
         x$Submission_Performance %>%
@@ -663,74 +663,71 @@ user_performance_data <- function(username, dates = NULL) {
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%
-        mutate(Date = ymd_hms(Date))
+        mutate(Date = as_date(ymd_hms(Date)))
 
     if (!is.null(dates)) {
         user_data <- user_data %>%
-            mutate(Date = as_date(Date)) %>%
             filter(Date %in% dates)
         submission_data <- submission_data %>%
-            mutate(Date = as_date(Date)) %>%
             filter(Date %in% dates)
     }
 
     return(list(user_data = user_data, submission_data = submission_data))
 }
 
-#' Get the performance of the user over time aggregated
+#' Get the valid dataset for a particular metric
 #'
-#' @name binded_user_data
+#' @name get_valid_data
 #'
 #' @param username A vector of one or more usernames
-#' @param dates A vector of dates to consider
-#' @param merge Whether to merge multiple usernames into one
-#'
-#' @export
+#' @param metric Based on the metric selected, get the correct data
+#' @param merge If TRUE, merge the results into a single username
 #'
 #' @import dplyr
 #'
-binded_user_data <- function(username, dates = NULL, merge = FALSE) {
-    Username <- Date <- NMR_Staked <- Leaderboard_Bonus <- NULL
-    Average_Correlation_Payout_NMR <- Reputation <- Average_Correlation <- NULL
-    Correlation <- MMC <- Correlation_With_MM <- NULL
+get_valid_data <- function(username, metric, merge = FALSE) {
+    Date <- NMR_Staked <- Leaderboard_Bonus <- Average_Correlation_Payout_NMR <- NULL
+    Reputation <- Rank <- Average_Correlation <- Correlation <- MMC <- Correlation_With_MM <- NULL
 
-    time_data <- user_performance_data(username, dates = dates)
+    user_metrics <- c("Reputation", "Rank", "NMR_Staked", "Leaderboard_Bonus",
+                      "Average_Correlation_Payout_NMR", "Average_Correlation")
+    sub_metrics <- c("Correlation", "MMC", "Correlation_With_MM")
 
-    user_data <- time_data$user_data %>%
-        group_by(Username, Date) %>%
-        summarise(
-            NMR_Staked = sum(NMR_Staked),
-            Leaderboard_Bonus = sum(Leaderboard_Bonus),
-            Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
-            Reputation = mean(Reputation),
-            Average_Correlation = mean(Average_Correlation)
-        )
-    sub_data <- time_data$submission_data %>%
-        group_by(Username, Date) %>%
-        summarise(
-            Correlation = mean(Correlation),
-            MMC = mean(MMC),
-            Correlation_With_MM = mean(Correlation_With_MM)
-        )
+    if (!(metric %in% c(user_metrics, sub_metrics))) {
+        stop(paste0("Metric not found. Valid metrics are: ", paste(c(user_metrics, sub_metrics), collapse = ", ")))
+    }
 
-    time_data <- user_data %>%
-        left_join(sub_data) %>%
-        ungroup() %>%
-        mutate(Date = as_date(Date))
+    all_data <- user_performance_data(username)
 
-    if (merge) {
-        time_data <- time_data %>%
-            group_by(Date) %>%
-            summarise(
-                NMR_Staked = sum(NMR_Staked),
-                Leaderboard_Bonus = sum(Leaderboard_Bonus),
-                Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
-                Reputation = mean(Reputation),
-                Correlation = mean(Correlation),
-                MMC = mean(MMC),
-                Correlation_With_MM = mean(Correlation_With_MM),
-                Username = "multiple"
-            )
+    if (metric %in% user_metrics) {
+        time_data <- all_data$user_data
+
+        if (merge) {
+            time_data <- time_data %>%
+                group_by(Date) %>%
+                summarise(
+                    NMR_Staked = sum(NMR_Staked),
+                    Leaderboard_Bonus = sum(Leaderboard_Bonus),
+                    Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
+                    Reputation = mean(Reputation),
+                    Rank = mean(Rank),
+                    Average_Correlation = mean(Average_Correlation),
+                    Username = "multiple"
+                )
+        }
+    } else {
+        time_data <- all_data$submission_data
+
+        if (merge) {
+            time_data <- time_data %>%
+                group_by(Date) %>%
+                summarise(
+                    Correlation = mean(Correlation),
+                    MMC = mean(MMC),
+                    Correlation_With_MM = mean(Correlation_With_MM),
+                    Username = "multiple"
+                )
+        }
     }
 
     return(time_data)
@@ -755,13 +752,13 @@ performance_over_time <- function(username, metric, merge = FALSE, outlier_cutof
 {
     Relevant <- `.` <- NULL
 
-    time_data <- binded_user_data(username, merge = merge) %>%
+    time_data <- get_valid_data(username, metric, merge = merge) %>%
         mutate(Relevant = .[[metric]])
 
     outlier_data <- time_data %>%
         filter(abs(Relevant) >= outlier_cutoff)
 
-    ggplot(data = time_data %>% filter(!is.na(Relevant)), aes_string(x = "Date", y = metric, colour = "Username")) +
+    ggplot(data = time_data, aes_string(x = "Date", y = metric, colour = "Username")) +
         geom_smooth() +
         geom_point(data = outlier_data, size = 2) +
         scale_x_date(date_breaks = "1 months", date_labels = "%b %y") +
@@ -784,15 +781,10 @@ performance_over_time <- function(username, metric, merge = FALSE, outlier_cutof
 #'
 performance_distribution <- function(username, metric, merge = FALSE)
 {
-    Username <- Relevant <- NULL
+    Username <- Relevant <- `.` <- Label <- NULL
 
-    hist_data <- binded_user_data(username, merge = merge) %>%
+    hist_data <- get_valid_data(username, metric, merge = merge) %>%
         mutate(Relevant = .[[metric]])
-
-    if (merge) {
-        hist_data <- hist_data %>%
-            mutate(Username = "multiple")
-    }
 
     hist_avg <- hist_data %>%
         group_by(Username) %>%
@@ -800,12 +792,12 @@ performance_distribution <- function(username, metric, merge = FALSE)
         mutate(Label = paste0("Avg: ", round(Relevant, digits = 4)))
 
     step_size <- function(metric) {
-        if (metric %in% c("Average_Correlation")) {
+        if (metric %in% c("Average_Correlation", "Correlation", "Correlation_With_MM")) {
             function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .01)
         } else if (metric == "Reputation") {
             function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .1)
         } else {
-            function(y) y
+            waiver()
         }
     }
 
@@ -817,6 +809,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
         xlab(tools::toTitleCase(gsub("_", " ", metric))) +
         ylab("Number of Models") +
         theme_bw() +
+        theme(legend.position = "off") +
         facet_wrap(~Username, nrow=length(username))
 }
 
@@ -835,26 +828,35 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #' @importFrom stats cor
 #' @importFrom tidyr gather
 #' @importFrom tidyr spread
+#' @importFrom utils tail
 #'
 summary_statistics <- function(username, dates = NULL) {
     Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
-    Leaderboard_Bonus <- `.` <- Average_Correlation <- Correlation_With_MM <- MMC <- NULL
+    Leaderboard_Bonus <- `.` <- Correlation <- Average_Correlation <- Correlation_With_MM <- MMC <- NULL
 
-    hist_data <- binded_user_data(username, dates = dates)
+    all_data <- user_performance_data(username, dates = dates)
 
-    summary_stat <- hist_data %>%
+    summary_stat_user <- all_data$user_data %>%
         group_by(Username) %>%
-        summarise(`Current Amount Staked` = NMR_Staked[1],
+        arrange(Date) %>%
+        summarise(`Current Amount Staked` = tail(NMR_Staked, 1),
                   `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
                   `Average Payout` = mean(Average_Correlation_Payout_NMR, na.rm = TRUE),
                   `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE),
-                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE),
+                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE))
+
+    summary_stat_sub <- all_data$submission_data %>%
+        group_by(Username) %>%
+        summarise(`Average Round Correlation` = mean(Correlation, na.rm = TRUE),
                   `Average MMC` = mean(MMC, na.rm = TRUE),
                   `Average Correlation With MM` = mean(Correlation_With_MM, na.rm = TRUE))
 
+    summary_stat <- summary_stat_user %>%
+        left_join(summary_stat_sub)
+
     if (length(username) == 1) return(summary_stat)
 
-    cc_stat <- hist_data %>%
+    cc_stat <- all_data$user_data %>%
         select(Date, Username, Average_Correlation) %>%
         gather(key = Variable, value = Value, 3:ncol(.)) %>%
         spread(key = Username, value = Value) %>%

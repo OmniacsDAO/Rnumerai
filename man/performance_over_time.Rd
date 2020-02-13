@@ -4,12 +4,7 @@
 \alias{performance_over_time}
 \title{Get the performance of the user over time}
 \usage{
-performance_over_time(
-  username,
-  metric,
-  merge = FALSE,
-  outlier_cutoff = 1.25e-02
-)
+performance_over_time(username, metric, merge = FALSE, outlier_cutoff = 0.0125)
 }
 \arguments{
 \item{username}{A vector of one or more usernames}

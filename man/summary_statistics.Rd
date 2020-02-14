@@ -4,12 +4,14 @@
 \alias{summary_statistics}
 \title{Get the summary statistics for}
 \usage{
-summary_statistics(username, dates = NULL)
+summary_statistics(username, dates = NULL, round_aggregate = TRUE)
 }
 \arguments{
 \item{username}{A vector of one or more usernames}
 
 \item{dates}{A vector of one or more dates to consider. If NULL, use all data}
+
+\item{round_aggregate}{If TRUE, aggregate the submission data by round}
 }
 \description{
 Get the summary statistics for

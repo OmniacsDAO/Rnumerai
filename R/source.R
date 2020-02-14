@@ -603,13 +603,13 @@ user_performance <- function(user_name="theomniacs")
 								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","rank"),
 								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]])),
 								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["leaderboardBonus"]]),NA,x[["leaderboardBonus"]])),
-								Average_Correlation_Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelationPayout"]]),NA,x[["averageCorrelationPayout"]])),
-								Average_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelation"]]),NA,x[["averageCorrelation"]]))
+								Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelationPayout"]]),NA,x[["averageCorrelationPayout"]])),
+								Average_Daily_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelation"]]),NA,x[["averageCorrelation"]]))
   							)
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
 								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","date"),
-								Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]])),
+								Round_Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]])),
 								MMC = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["mmc"]]),NA,x[["mmc"]])),
 								Correlation_With_MM = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlationWithMetamodel"]]),NA,x[["correlationWithMetamodel"]]))
   							)
@@ -629,15 +629,16 @@ user_performance <- function(user_name="theomniacs")
 #'
 #' @param username A vector of one or more usernames
 #' @param dates A vector of one or more dates to consider. If NULL, use all data
+#' @param round_aggregate If TRUE, aggregate the submission data by round
 #'
 #' @export
 #'
 #' @import dplyr
 #' @importFrom lubridate ymd_hms
 #'
-user_performance_data <- function(username, dates = NULL) {
-    Reputation <- Average_Correlation <- Date <- NULL
-    Correlation <- Correlation_With_MM <- NULL
+user_performance_data <- function(username, dates = NULL, round_aggregate = TRUE) {
+    Reputation <- Average_Daily_Correlation <- Date <- MMC <- NULL
+    Round_Correlation <- Correlation_With_MM <- Round_Number <- Username <- NULL
 
     ## Prepare data set and preformatiing
     data <- lapply(username, function(usr) {
@@ -650,7 +651,7 @@ user_performance_data <- function(username, dates = NULL) {
     user_data <- lapply(data, function(x) {
         x$User_Performance %>%
             mutate_if(is.factor, as.character) %>%
-            mutate_at(vars(Reputation:Average_Correlation), as.numeric) %>%
+            mutate_at(vars(Reputation:Average_Daily_Correlation), as.numeric) %>%
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%
@@ -659,11 +660,21 @@ user_performance_data <- function(username, dates = NULL) {
     submission_data <- lapply(data, function(x) {
         x$Submission_Performance %>%
             mutate_if(is.factor, as.character) %>%
-            mutate_at(vars(Correlation:Correlation_With_MM), as.numeric) %>%
+            mutate_at(vars(Round_Correlation:Correlation_With_MM), as.numeric) %>%
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%
         mutate(Date = as_date(ymd_hms(Date)))
+
+    if (round_aggregate) {
+        submission_data <- submission_data %>%
+            group_by(Round_Number, Username) %>%
+            summarise(Date = max(Date),
+                      Round_Correlation = mean(Round_Correlation, na.rm = TRUE),
+                      MMC = mean(MMC, na.rm = TRUE),
+                      Correlation_With_MM = mean(Correlation_With_MM, na.rm = TRUE)) %>%
+            ungroup()
+    }
 
     if (!is.null(dates)) {
         user_data <- user_data %>%
@@ -682,22 +693,23 @@ user_performance_data <- function(username, dates = NULL) {
 #' @param username A vector of one or more usernames
 #' @param metric Based on the metric selected, get the correct data
 #' @param merge If TRUE, merge the results into a single username
+#' @param round_aggregate If TRUE, aggregate the submission data by round
 #'
 #' @import dplyr
 #'
-get_valid_data <- function(username, metric, merge = FALSE) {
-    Date <- NMR_Staked <- Leaderboard_Bonus <- Average_Correlation_Payout_NMR <- NULL
-    Reputation <- Rank <- Average_Correlation <- Correlation <- MMC <- Correlation_With_MM <- NULL
+get_valid_data <- function(username, metric, merge = FALSE, round_aggregate = TRUE) {
+    Date <- NMR_Staked <- Leaderboard_Bonus <- Payout_NMR <- NULL
+    Reputation <- Rank <- Average_Daily_Correlation <- Round_Correlation <- MMC <- Correlation_With_MM <- NULL
 
     user_metrics <- c("Reputation", "Rank", "NMR_Staked", "Leaderboard_Bonus",
-                      "Average_Correlation_Payout_NMR", "Average_Correlation")
-    sub_metrics <- c("Correlation", "MMC", "Correlation_With_MM")
+                      "Payout_NMR", "Average_Daily_Correlation")
+    sub_metrics <- c("Round_Correlation", "MMC", "Correlation_With_MM")
 
     if (!(metric %in% c(user_metrics, sub_metrics))) {
         stop(paste0("Metric not found. Valid metrics are: ", paste(c(user_metrics, sub_metrics), collapse = ", ")))
     }
 
-    all_data <- user_performance_data(username)
+    all_data <- user_performance_data(username, round_aggregate = round_aggregate)
 
     if (metric %in% user_metrics) {
         time_data <- all_data$user_data
@@ -708,10 +720,10 @@ get_valid_data <- function(username, metric, merge = FALSE) {
                 summarise(
                     NMR_Staked = sum(NMR_Staked),
                     Leaderboard_Bonus = sum(Leaderboard_Bonus),
-                    Average_Correlation_Payout_NMR = sum(Average_Correlation_Payout_NMR),
+                    Payout_NMR = sum(Payout_NMR),
                     Reputation = mean(Reputation),
                     Rank = mean(Rank),
-                    Average_Correlation = mean(Average_Correlation),
+                    Average_Daily_Correlation = mean(Average_Daily_Correlation),
                     Username = "multiple"
                 )
         }
@@ -722,7 +734,7 @@ get_valid_data <- function(username, metric, merge = FALSE) {
             time_data <- time_data %>%
                 group_by(Date) %>%
                 summarise(
-                    Correlation = mean(Correlation),
+                    Round_Correlation = mean(Round_Correlation),
                     MMC = mean(MMC),
                     Correlation_With_MM = mean(Correlation_With_MM),
                     Username = "multiple"
@@ -741,6 +753,7 @@ get_valid_data <- function(username, metric, merge = FALSE) {
 #' @param metric A statistic, as a character vector.
 #' @param merge If TRUE, combine the usernames into a single result
 #' @param outlier_cutoff The absolute value above which points will be displayed
+#' @param round_aggregate If TRUE, aggregate the submission data by round
 #'
 #' @export
 #'
@@ -748,22 +761,31 @@ get_valid_data <- function(username, metric, merge = FALSE) {
 #' @import dplyr
 #' @importFrom lubridate as_date
 #'
-performance_over_time <- function(username, metric, merge = FALSE, outlier_cutoff = .0125)
+performance_over_time <- function(username, metric, merge = FALSE, outlier_cutoff = if (round_aggregate) 0 else 0.0125, round_aggregate = TRUE)
 {
     Relevant <- `.` <- NULL
 
-    time_data <- get_valid_data(username, metric, merge = merge) %>%
+    time_data <- get_valid_data(username, metric, merge = merge, round_aggregate = round_aggregate) %>%
         mutate(Relevant = .[[metric]])
 
     outlier_data <- time_data %>%
         filter(abs(Relevant) >= outlier_cutoff)
 
-    ggplot(data = time_data, aes_string(x = "Date", y = metric, colour = "Username")) +
+    myx <- "Date"
+    if (round_aggregate) myx <- "Round_Number"
+
+    p1 <- ggplot(data = time_data, aes_string(x = myx, y = metric, colour = "Username")) +
         geom_smooth() +
         geom_point(data = outlier_data, size = 2) +
-        scale_x_date(date_breaks = "1 months", date_labels = "%b %y") +
         ylab(tools::toTitleCase(gsub("_", " ", metric))) +
+        xlab(tools::toTitleCase(gsub("_", " ", myx))) +
         theme_bw()
+
+    if (!round_aggregate) {
+        p1 <- p1 + scale_x_date(date_breaks = "1 months", date_labels = "%b %y")
+    }
+
+    return(p1)
 }
 
 #' Get the performance of the user as a distribution
@@ -773,17 +795,18 @@ performance_over_time <- function(username, metric, merge = FALSE, outlier_cutof
 #' @param username A vector of one or more usernames
 #' @param metric A statistic, as a character vector.
 #' @param merge If TRUE, combine the usernames into a single result
+#' @param round_aggregate If TRUE, aggregate the submission data by round
 #'
 #' @export
 #'
 #' @import ggplot2
 #' @import dplyr
 #'
-performance_distribution <- function(username, metric, merge = FALSE)
+performance_distribution <- function(username, metric, merge = FALSE, round_aggregate = TRUE)
 {
     Username <- Relevant <- `.` <- Label <- NULL
 
-    hist_data <- get_valid_data(username, metric, merge = merge) %>%
+    hist_data <- get_valid_data(username, metric, merge = merge, round_aggregate = round_aggregate) %>%
         mutate(Relevant = .[[metric]])
 
     hist_avg <- hist_data %>%
@@ -792,7 +815,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
         mutate(Label = paste0("Avg: ", round(Relevant, digits = 4)))
 
     step_size <- function(metric) {
-        if (metric %in% c("Average_Correlation", "Correlation", "Correlation_With_MM")) {
+        if (metric %in% c("Average_Daily_Correlation", "Round_Correlation")) {
             function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .01)
         } else if (metric == "Reputation") {
             function(y) seq(floor(min(y, na.rm = TRUE)), ceiling(max(y, na.rm = TRUE)), by = .1)
@@ -819,6 +842,7 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #'
 #' @param username A vector of one or more usernames
 #' @param dates A vector of one or more dates to consider. If NULL, use all data
+#' @param round_aggregate If TRUE, aggregate the submission data by round
 #'
 #' @export
 #'
@@ -830,24 +854,24 @@ performance_distribution <- function(username, metric, merge = FALSE)
 #' @importFrom tidyr spread
 #' @importFrom utils tail
 #'
-summary_statistics <- function(username, dates = NULL) {
-    Date <- Variable <- Value <- Username <- NMR_Staked <- Average_Correlation_Payout_NMR <- NULL
-    Leaderboard_Bonus <- `.` <- Correlation <- Average_Correlation <- Correlation_With_MM <- MMC <- NULL
+summary_statistics <- function(username, dates = NULL, round_aggregate = TRUE) {
+    Date <- Variable <- Value <- Username <- NMR_Staked <- Payout_NMR <- NULL
+    Leaderboard_Bonus <- `.` <- Round_Correlation <- Average_Daily_Correlation <- Correlation_With_MM <- MMC <- NULL
 
-    all_data <- user_performance_data(username, dates = dates)
+    all_data <- user_performance_data(username, dates = dates, round_aggregate = round_aggregate)
 
     summary_stat_user <- all_data$user_data %>%
         group_by(Username) %>%
         arrange(Date) %>%
         summarise(`Current Amount Staked` = tail(NMR_Staked, 1),
-                  `Total Payout` = sum(Average_Correlation_Payout_NMR, na.rm = TRUE),
-                  `Average Payout` = mean(Average_Correlation_Payout_NMR, na.rm = TRUE),
+                  `Total Payout` = sum(Payout_NMR, na.rm = TRUE),
+                  `Average Payout` = mean(Payout_NMR, na.rm = TRUE),
                   `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE),
-                  `Average Correlation` = mean(Average_Correlation, na.rm = TRUE))
+                  `Average Daily Correlation` = mean(Average_Daily_Correlation, na.rm = TRUE))
 
     summary_stat_sub <- all_data$submission_data %>%
         group_by(Username) %>%
-        summarise(`Average Round Correlation` = mean(Correlation, na.rm = TRUE),
+        summarise(`Average Round Correlation` = mean(Round_Correlation, na.rm = TRUE),
                   `Average MMC` = mean(MMC, na.rm = TRUE),
                   `Average Correlation With MM` = mean(Correlation_With_MM, na.rm = TRUE))
 
@@ -857,7 +881,7 @@ summary_statistics <- function(username, dates = NULL) {
     if (length(username) == 1) return(summary_stat)
 
     cc_stat <- all_data$user_data %>%
-        select(Date, Username, Average_Correlation) %>%
+        select(Date, Username, Average_Daily_Correlation) %>%
         gather(key = Variable, value = Value, 3:ncol(.)) %>%
         spread(key = Username, value = Value) %>%
         split(.$Variable) %>%

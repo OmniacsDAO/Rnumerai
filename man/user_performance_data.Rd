@@ -4,12 +4,14 @@
 \alias{user_performance_data}
 \title{Get the performance of the user over time}
 \usage{
-user_performance_data(username, dates = NULL)
+user_performance_data(username, dates = NULL, round_aggregate = TRUE)
 }
 \arguments{
 \item{username}{A vector of one or more usernames}
 
 \item{dates}{A vector of one or more dates to consider. If NULL, use all data}
+
+\item{round_aggregate}{If TRUE, aggregate the submission data by round}
 }
 \description{
 Get the performance of the user over time

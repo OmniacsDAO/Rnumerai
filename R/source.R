@@ -772,7 +772,7 @@ performance_over_time <- function(username, metric, merge = FALSE, outlier_cutof
         filter(abs(Relevant) >= outlier_cutoff)
 
     myx <- "Date"
-    if (round_aggregate) myx <- "Round_Number"
+    if (round_aggregate && "Round_Number" %in% time_data) myx <- "Round_Number"
 
     p1 <- ggplot(data = time_data, aes_string(x = myx, y = metric, colour = "Username")) +
         geom_smooth() +
@@ -864,7 +864,7 @@ summary_statistics <- function(username, dates = NULL, round_aggregate = TRUE) {
         group_by(Username) %>%
         arrange(Date) %>%
         summarise(`Current Amount Staked` = tail(NMR_Staked, 1),
-                  `Total Payout` = sum(Payout_NMR, na.rm = TRUE),
+                  `Total Net Payout` = sum(Payout_NMR, na.rm = TRUE),
                   `Average Payout` = mean(Payout_NMR, na.rm = TRUE),
                   `Total Bonus` = sum(Leaderboard_Bonus, na.rm = TRUE),
                   `Average Daily Correlation` = mean(Average_Daily_Correlation, na.rm = TRUE))

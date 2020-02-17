@@ -772,7 +772,7 @@ performance_over_time <- function(username, metric, merge = FALSE, outlier_cutof
         filter(abs(Relevant) >= outlier_cutoff)
 
     myx <- "Date"
-    if (round_aggregate && "Round_Number" %in% time_data) myx <- "Round_Number"
+    if (round_aggregate && "Round_Number" %in% names(time_data)) myx <- "Round_Number"
 
     p1 <- ggplot(data = time_data, aes_string(x = myx, y = metric, colour = "Username")) +
         geom_smooth() +

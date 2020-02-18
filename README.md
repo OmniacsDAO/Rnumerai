@@ -93,7 +93,7 @@ Create histograms of metric performance
 Create time series plots of metric performance
 
 - `performance_over_time(c("objectscience"), "MMC")`
-- `performance_over_time(c("objectscience", "uuazed","arbitrage"), "Average_Daily_Correlation",outlier_cutoff = .01,merge = TRUE)`
+- `performance_over_time(c("objectscience", "uuazed", "arbitrage"), "Average_Daily_Correlation", outlier_cutoff = .01, merge = TRUE)`
 
 ### 3. Display performance summary statistics
 

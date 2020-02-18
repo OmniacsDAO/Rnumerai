@@ -77,6 +77,30 @@ The submission object should have two columns (id & prediction_kazutsugi) only.
 -   `release_tx_hash <- release_nmr(value = 1)`
 -   `release_tx_hash`
 
+# Performance functions
+
+Users can now check performance across the following metrics: `Reputation`, `Rank`, `NMR_Staked`, `Leaderboard_Bonus`, `Payout_NMR`, `Average_Daily_Correlation`, `Round_Correlation`, `MMC`, `Correlation_With_MM`.
+
+### 1. Display performance distributions
+
+Create histograms of metric performance
+
+- `performance_distribution(c("objectscience"), "Average_Daily_Correlation")`
+- `performance_distribution(c("objectscience"), "MMC")`
+
+### 2. Display performance over time
+
+Create time series plots of metric performance
+
+- `performance_over_time(c("objectscience"), "MMC")`
+- `performance_over_time(c("objectscience", "uuazed","arbitrage"), "Average_Daily_Correlation",outlier_cutoff = .01,merge = TRUE)`
+
+### 3. Display performance summary statistics
+
+Create a table of summary statistics
+
+- `summary_statistics(c("objectscience", "uuazed", "arbitrage"))`
+
 # Additional functions
 
 ### 1. Get User information

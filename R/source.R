@@ -236,6 +236,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #'
 #' @name submit_predictions
 #' @param submission The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"
+#' @param model_id Target model UUID (required for accounts with multiple models)
 #' @param location The location in which to store the predictions
 #' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
 #' @return The submission id for the submission made
@@ -247,7 +248,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data,tournament="Kazutsugi")
 #' }
-submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi")
+submit_predictions <- function(submission, model_id = NULL, location = tempdir(),tournament="Kazutsugi")
 {
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
@@ -277,7 +278,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
-												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'){id}
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'",modelId:',model_id,'){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)
@@ -421,6 +422,7 @@ current_round <- function(tournament="Kazutsugi")
 #'
 #' @name stake_nmr
 #' @param value The amount of NMR to stake
+#' @param model_id The id of the model with which to stake
 #' @param mfa_code The mfa code
 #' @param password Your password
 #' @return The transaction hash for stake made
@@ -429,13 +431,14 @@ current_round <- function(tournament="Kazutsugi")
 #' \dontrun{
 #' stake_tx_hash <- stake_nmr(value = 1)
 #' }
-stake_nmr <- function(value, mfa_code = "", password = "")
+stake_nmr <- function(value, model_id = NULL, mfa_code = "", password = "")
 {
 	stake_query <- paste0(
 							'mutation stake_query {
 								v2Stake(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
+								modelId:"',model_id,'"
 								){
 									txHash
 								}}'
@@ -448,6 +451,7 @@ stake_nmr <- function(value, mfa_code = "", password = "")
 #'
 #' @name release_nmr
 #' @param value The amount of NMR to release
+#' @param model_id The id of the model with which to stake
 #' @param mfa_code The mfa code
 #' @param password Your password
 #' @return The transaction hash for release request
@@ -456,13 +460,14 @@ stake_nmr <- function(value, mfa_code = "", password = "")
 #' \dontrun{
 #' release_tx_hash <- release_nmr(value = 1)
 #' }
-release_nmr <- function(value, mfa_code = "", password = "")
+release_nmr <- function(value, model_id = NULL, mfa_code = "", password = "")
 {
 	release_query <- paste0(
 							'mutation release_query {
 								v2ReleaseStakeRequest(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
+								modelId:"',model_id,'"
 								){
 									txHash
 								}}'

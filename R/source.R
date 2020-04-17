@@ -236,6 +236,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #'
 #' @name submit_predictions
 #' @param submission The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"
+#' @param model_id Target model UUID (required for accounts with multiple models)
 #' @param location The location in which to store the predictions
 #' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
 #' @return The submission id for the submission made
@@ -247,7 +248,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data,tournament="Kazutsugi")
 #' }
-submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi")
+submit_predictions <- function(submission, model_id = NULL, location = tempdir(),tournament="Kazutsugi")
 {
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
@@ -277,7 +278,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
-												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'){id}
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'",modelId:',model_id,'){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)
@@ -346,6 +347,7 @@ status_submission_by_id <- function(sub_id)
 #' Get information about your username
 #'
 #' @name user_info
+#' @param model_id The id of the model
 #' @return A list containing information about user
 #' @export
 #' @examples
@@ -354,10 +356,11 @@ status_submission_by_id <- function(sub_id)
 #' names(uinfo)
 #' uinfo$Latest_Submission
 #' }
-user_info <- function()
+user_info <- function(model_id = NULL)
 {
-	user_info_query <-	'query user_info_query {
-							user {
+    .Deprecated("account_info")
+	user_info_query <-	paste0('query user_info_query {
+							user(modelId: "', model_id, '") {
 								id
 								username
 								email
@@ -369,9 +372,8 @@ user_info <- function()
 								availableEth
 								availableUsd
 								assignedEthAddress
-								customEthAddresses
 							}
-						}'
+						}')
 
 	query_pass <- run_query(query=user_info_query)
 
@@ -388,6 +390,83 @@ user_info <- function()
 						Balances = data.frame(USD=query_pass$data$user$availableUsd,NMR = query_pass$data$user$availableNmr)
 					)
 	return(result)
+}
+
+#' Get models associated with your account
+#'
+#' @name get_models
+#' @return A list containing information about the models
+#' @export
+#' @examples
+#' \dontrun{
+#' models <- get_models()
+#' }
+get_models <- function() {
+    models_query = 'query {
+            account {
+              models {
+                id
+                name
+              }
+            }
+          }'
+
+    query_pass <- run_query(query=models_query)
+
+    model_list <- query_pass$data$account$models
+    model_ids <- sapply(model_list, `[[`, 1)
+    names(model_ids) <- sapply(model_list, `[[`, 2)
+
+
+    return(model_ids)
+}
+
+#' Get information about your account
+#'
+#' @name account_info
+#' @return A list containing information about account
+#' @export
+#' @examples
+#' \dontrun{
+#' ainfo <- account_info()
+#' names(ainfo)
+#' ainfo$Latest_Submission
+#' }
+account_info <- function()
+{
+    account_info_query <-	'query {
+                            account {
+                              username
+                              walletAddress
+                              availableNmr
+                              email
+                              id
+                              mfaEnabled
+                              status
+                              insertedAt
+                              models {
+                                id
+                                name
+                                submissions {
+                                  id
+                                  filename
+                                }
+                                v2Stake {
+                                  status
+                                  txHash
+                                }
+                              }
+                              apiTokens {
+                                name
+                                public_id
+                                scopes
+                              }
+            }
+          }'
+
+    query_pass <- run_query(query=account_info_query)
+
+    return(query_pass$data$account)
 }
 
 #' Get current round and it's closing time
@@ -421,6 +500,7 @@ current_round <- function(tournament="Kazutsugi")
 #'
 #' @name stake_nmr
 #' @param value The amount of NMR to stake
+#' @param model_id The id of the model with which to stake
 #' @param mfa_code The mfa code
 #' @param password Your password
 #' @return The transaction hash for stake made
@@ -429,13 +509,14 @@ current_round <- function(tournament="Kazutsugi")
 #' \dontrun{
 #' stake_tx_hash <- stake_nmr(value = 1)
 #' }
-stake_nmr <- function(value, mfa_code = "", password = "")
+stake_nmr <- function(value, model_id = NULL, mfa_code = "", password = "")
 {
 	stake_query <- paste0(
 							'mutation stake_query {
 								v2Stake(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
+								modelId:"',model_id,'"
 								){
 									txHash
 								}}'
@@ -448,6 +529,7 @@ stake_nmr <- function(value, mfa_code = "", password = "")
 #'
 #' @name release_nmr
 #' @param value The amount of NMR to release
+#' @param model_id The id of the model with which to stake
 #' @param mfa_code The mfa code
 #' @param password Your password
 #' @return The transaction hash for release request
@@ -456,13 +538,14 @@ stake_nmr <- function(value, mfa_code = "", password = "")
 #' \dontrun{
 #' release_tx_hash <- release_nmr(value = 1)
 #' }
-release_nmr <- function(value, mfa_code = "", password = "")
+release_nmr <- function(value, model_id = NULL, mfa_code = "", password = "")
 {
 	release_query <- paste0(
 							'mutation release_query {
 								v2ReleaseStakeRequest(code:"',mfa_code,'"
 								password:"',password,'"
 								value:"',value,'"
+								modelId:"',model_id,'"
 								){
 									txHash
 								}}'

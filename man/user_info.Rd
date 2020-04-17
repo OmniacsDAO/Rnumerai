@@ -4,7 +4,10 @@
 \alias{user_info}
 \title{Get information about your username}
 \usage{
-user_info()
+user_info(model_id = NULL)
+}
+\arguments{
+\item{model_id}{The id of the model}
 }
 \value{
 A list containing information about user

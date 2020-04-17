@@ -4,10 +4,12 @@
 \alias{release_nmr}
 \title{Release NMR}
 \usage{
-release_nmr(value, mfa_code = "", password = "")
+release_nmr(value, model_id = NULL, mfa_code = "", password = "")
 }
 \arguments{
 \item{value}{The amount of NMR to release}
+
+\item{model_id}{The id of the model with which to stake}
 
 \item{mfa_code}{The mfa code}
 

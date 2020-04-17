@@ -4,10 +4,12 @@
 \alias{stake_nmr}
 \title{Stake NMR}
 \usage{
-stake_nmr(value, mfa_code = "", password = "")
+stake_nmr(value, model_id = NULL, mfa_code = "", password = "")
 }
 \arguments{
 \item{value}{The amount of NMR to stake}
+
+\item{model_id}{The id of the model with which to stake}
 
 \item{mfa_code}{The mfa code}
 

@@ -347,6 +347,7 @@ status_submission_by_id <- function(sub_id)
 #' Get information about your username
 #'
 #' @name user_info
+#' @param model_id The id of the model
 #' @return A list containing information about user
 #' @export
 #' @examples

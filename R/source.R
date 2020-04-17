@@ -355,10 +355,11 @@ status_submission_by_id <- function(sub_id)
 #' names(uinfo)
 #' uinfo$Latest_Submission
 #' }
-user_info <- function()
+user_info <- function(model_id = NULL)
 {
-	user_info_query <-	'query user_info_query {
-							user {
+    .Deprecated("account_info")
+	user_info_query <-	paste0('query user_info_query {
+							user(modelId: "', model_id, '") {
 								id
 								username
 								email
@@ -370,9 +371,8 @@ user_info <- function()
 								availableEth
 								availableUsd
 								assignedEthAddress
-								customEthAddresses
 							}
-						}'
+						}')
 
 	query_pass <- run_query(query=user_info_query)
 
@@ -389,6 +389,83 @@ user_info <- function()
 						Balances = data.frame(USD=query_pass$data$user$availableUsd,NMR = query_pass$data$user$availableNmr)
 					)
 	return(result)
+}
+
+#' Get models associated with your account
+#'
+#' @name get_models
+#' @return A list containing information about the models
+#' @export
+#' @examples
+#' \dontrun{
+#' models <- get_models()
+#' }
+get_models <- function() {
+    models_query = 'query {
+            account {
+              models {
+                id
+                name
+              }
+            }
+          }'
+
+    query_pass <- run_query(query=models_query)
+
+    model_list <- query_pass$data$account$models
+    model_ids <- sapply(model_list, `[[`, 1)
+    names(model_ids) <- sapply(model_list, `[[`, 2)
+
+
+    return(model_ids)
+}
+
+#' Get information about your account
+#'
+#' @name account_info
+#' @return A list containing information about account
+#' @export
+#' @examples
+#' \dontrun{
+#' ainfo <- account_info()
+#' names(ainfo)
+#' ainfo$Latest_Submission
+#' }
+account_info <- function()
+{
+    account_info_query <-	'query {
+                            account {
+                              username
+                              walletAddress
+                              availableNmr
+                              email
+                              id
+                              mfaEnabled
+                              status
+                              insertedAt
+                              models {
+                                id
+                                name
+                                submissions {
+                                  id
+                                  filename
+                                }
+                                v2Stake {
+                                  status
+                                  txHash
+                                }
+                              }
+                              apiTokens {
+                                name
+                                public_id
+                                scopes
+                              }
+            }
+          }'
+
+    query_pass <- run_query(query=account_info_query)
+
+    return(query_pass$data$account)
 }
 
 #' Get current round and it's closing time

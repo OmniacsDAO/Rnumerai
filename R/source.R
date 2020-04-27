@@ -285,7 +285,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
 												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",
-												tournament:',tournament_id,'",
+												tournament:',tournament_id,',
 												modelId:',model_id,'){id}
 											}'
 										)

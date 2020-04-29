@@ -6,19 +6,19 @@
 \usage{
 submit_predictions(
   submission,
-  model_id = NULL,
   location = tempdir(),
-  tournament = "Kazutsugi"
+  tournament = "Kazutsugi",
+  model_id = NULL
 )
 }
 \arguments{
 \item{submission}{The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"}
 
-\item{model_id}{Target model UUID (required for accounts with multiple models)}
-
 \item{location}{The location in which to store the predictions}
 
 \item{tournament}{The name of the tournament, Default is Kazutsugi and is not case-sensitive}
+
+\item{model_id}{Target model UUID (required for accounts with multiple models)}
 }
 \value{
 The submission id for the submission made

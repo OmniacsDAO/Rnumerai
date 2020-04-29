@@ -236,9 +236,9 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #'
 #' @name submit_predictions
 #' @param submission The data frame of predictions to submit. This should have two columns named "id" & "prediction_kazutsugi"
-#' @param model_id Target model UUID (required for accounts with multiple models)
 #' @param location The location in which to store the predictions
 #' @param tournament The name of the tournament, Default is Kazutsugi and is not case-sensitive
+#' @param model_id Target model UUID (required for accounts with multiple models)
 #' @return The submission id for the submission made
 #' @export
 #' @importFrom lubridate today
@@ -248,7 +248,7 @@ download_data <- function(location = tempdir(),tournament="KAZUTSUGI")
 #' \dontrun{
 #' submission_id <- submit_predictions(submission_data,tournament="Kazutsugi")
 #' }
-submit_predictions <- function(submission, model_id = NULL, location = tempdir(),tournament="Kazutsugi")
+submit_predictions <- function(submission, location = tempdir(),tournament="Kazutsugi", model_id = NULL)
 {
 	## Match tournament ID
 	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI")))
@@ -260,9 +260,15 @@ submit_predictions <- function(submission, model_id = NULL, location = tempdir()
 	submission_filename <- file.path(location, paste0("submission_data_", today(), ".csv"))
 	write.csv(submission, submission_filename, row.names = FALSE)
 
+	if (is.null(model_id)) {
+	    model_id <- "null"
+	}
+
 	## Get a slot on AWS for our submission
 	aws_slot_query <- paste0('query aws_slot_query {
-							submissionUploadAuth (filename : "submission_data.csv",tournament:',tournament_id,'){
+							submissionUploadAuth (filename : "submission_data.csv",
+							                      tournament:',tournament_id,',
+							                      modelId:',model_id,'){
 								filename,
 								url
 							}
@@ -278,7 +284,9 @@ submit_predictions <- function(submission, model_id = NULL, location = tempdir()
 	## Register our submission and get evaluation for it
 	register_submission_query <- paste0(
 											'mutation register_submission_query {
-												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",tournament:',tournament_id,'",modelId:',model_id,'){id}
+												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",
+												tournament:',tournament_id,',
+												modelId:',model_id,'){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)
@@ -691,7 +699,7 @@ user_performance <- function(user_name="theomniacs")
   							)
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
-								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","date"),
+								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances, function(x) ifelse(is.null(x[["date"]]), NA, x[["date"]])),
 								Round_Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]])),
 								MMC = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["mmc"]]),NA,x[["mmc"]])),
 								Correlation_With_MM = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlationWithMetamodel"]]),NA,x[["correlationWithMetamodel"]]))

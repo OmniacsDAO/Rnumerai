@@ -699,7 +699,7 @@ user_performance <- function(user_name="theomniacs")
   							)
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
-								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","date"),
+								Date = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances, function(x) ifelse(is.null(x[["date"]]), NA, x[["date"]])),
 								Round_Correlation = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlation"]]),NA,x[["correlation"]])),
 								MMC = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["mmc"]]),NA,x[["mmc"]])),
 								Correlation_With_MM = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,function(x) ifelse(is.null(x[["correlationWithMetamodel"]]),NA,x[["correlationWithMetamodel"]]))

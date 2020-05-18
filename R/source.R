@@ -268,7 +268,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	aws_slot_query <- paste0('query aws_slot_query {
 							submissionUploadAuth (filename : "submission_data.csv",
 							                      tournament:',tournament_id,',
-							                      modelId:',model_id,'){
+							                      modelId:"',model_id,'"){
 								filename,
 								url
 							}
@@ -286,7 +286,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 											'mutation register_submission_query {
 												createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",
 												tournament:',tournament_id,',
-												modelId:',model_id,'){id}
+												modelId:"',model_id,'"){id}
 											}'
 										)
 	query_pass <- run_query(query=register_submission_query)

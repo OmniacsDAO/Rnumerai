@@ -261,7 +261,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Kazu
 	write.csv(submission, submission_filename, row.names = FALSE)
 
 	if (is.null(model_id)) {
-	    model_id <- "null"
+	    model_id <- get_models()[account_info()$username]
 	}
 
 	## Get a slot on AWS for our submission

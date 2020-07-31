@@ -688,10 +688,10 @@ user_performance <- function(user_name="theomniacs")
 	query_pass <- run_query(query=user_query)
 
 	user_performance <- data.frame(
-								Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","date"),
-								Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","tier"),
-								Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","reputation"),
-								Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,"[[","rank"),
+	                            Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances, function(x) ifelse(is.null(x[["date"]]), NA, x[["date"]]) ),
+	                            Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances, function(x) ifelse(is.null(x[["tier"]]), NA, x[["tier"]]) ),
+	                            Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["reputation"]]), NA, x[["reputation"]]) ),
+	                            Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["rank"]]), NA, x[["rank"]]) ),
 								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]])),
 								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["leaderboardBonus"]]),NA,x[["leaderboardBonus"]])),
 								Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelationPayout"]]),NA,x[["averageCorrelationPayout"]])),

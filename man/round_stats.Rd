@@ -4,12 +4,12 @@
 \alias{round_stats}
 \title{Get Information for a Round Number}
 \usage{
-round_stats(round_number, tournament = "Kazutsugi")
+round_stats(round_number, tournament = "Nomi")
 }
 \arguments{
 \item{round_number}{Round Number for which information to fetch}
 
-\item{tournament}{The name of the tournament, Default is Kazutsugi and is not case-sensitive}
+\item{tournament}{The name of the tournament, Default is Nomi and is not case-sensitive}
 }
 \value{
 List containing general round information

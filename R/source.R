@@ -208,7 +208,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 download_data <- function(location = tempdir(),tournament="NOMI")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI","NOMI")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","NOMI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	## Get download link
@@ -251,7 +251,7 @@ download_data <- function(location = tempdir(),tournament="NOMI")
 submit_predictions <- function(submission, location = tempdir(),tournament="Nomi", model_id = NULL)
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI","NOMI")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","NOMI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 	if(!all(names(submission)==c("id","prediction"))) stop("Column names should be id & prediction")
 	#names(submission)[2] <- paste0(names(submission)[2],"_",tolower(tournament))
@@ -490,7 +490,7 @@ account_info <- function()
 current_round <- function(tournament="Nomi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI","NOMI")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","NOMI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	current_round = paste0('query current_round {
@@ -577,7 +577,7 @@ release_nmr <- function(value, model_id = NULL, mfa_code = "", password = "")
 round_stats <- function(round_number,tournament="Nomi")
 {
 	## Match tournament ID
-	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","KAZUTSUGI","NOMI")))
+	tournament_id <- match(tolower(tournament),tolower(c("BERNIE","","","KEN","CHARLES","FRANK","HILLARY","NOMI")))
 	if(is.na(tournament_id)) stop("Tournament Name doesn't match")
 
 	round_stats_query <- paste0(

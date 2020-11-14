@@ -114,7 +114,7 @@ Get user information for the user whose API key and ID are entered, Check out th
 ### 2. Get Information for a round
 Get information for a given round number.
 
--   `round_stats(tournament="Nomi",round_number=177)`
+-   `round_stats(tournament="Nomi",round_number=238)`
 
 ### 3. Get current open round
 Get closing time and round number for current open round

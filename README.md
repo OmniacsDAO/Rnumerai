@@ -54,13 +54,13 @@ Optional: If we choose not to setup the credentials here the terminal will inter
 
 A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
 
--   `submission <- data.frame(id=data_tournament$id,prediction_kazutsugi = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
+-   `submission <- data.frame(id=data_tournament$id,prediction = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
 
 ### 6. Submit predictions for tournament and get submission id
 
-The submission object should have two columns (id & prediction_kazutsugi) only.
+The submission object should have two columns (id & prediction) only.
 
--    `submission_id <- submit_predictions(submission,data_dir,tournament="Kazutsugi")`
+-    `submission_id <- submit_predictions(submission,data_dir,tournament="Nomi")`
 
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
@@ -114,7 +114,7 @@ Get user information for the user whose API key and ID are entered, Check out th
 ### 2. Get Information for a round
 Get information for a given round number.
 
--   `round_stats(tournament="Kazutsugi",round_number=177)`
+-   `round_stats(tournament="Nomi",round_number=238)`
 
 ### 3. Get current open round
 Get closing time and round number for current open round

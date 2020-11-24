@@ -103,13 +103,13 @@ Create a table of summary statistics
 
 # Additional functions
 
-### 1. Get User information
+### 1. Get account information
 
-Get user information for the user whose API key and ID are entered, Check out the name of the return object to see what informations are included in the return and than subset the required information
+Get account information for the account whose API key and ID are entered, Check out the name of the return object to see what informations are included in the return and then subset the required information
 
--   `uinfo <- user_info()`
--   `uinfo`
--   `names(uinfo)`
+-   `ainfo <- account_info()`
+-   `ainfo`
+-   `names(ainfo)`
 
 ### 2. Get Information for a round
 Get information for a given round number.

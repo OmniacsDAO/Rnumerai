@@ -281,7 +281,7 @@ submit_predictions <- function(submission, location = tempdir(),tournament="Nomi
 							body = upload_file(path = submission_filename)
 						)
 
-	if (mysubmission$status_code != 200 && mysubmission$status_code != 201) {
+	if (mysubmission$status_code != 200) {
 	    stop(paste0("Uploading submission failed with status code ", mysubmission$status_code))
 	}
 

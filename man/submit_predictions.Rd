@@ -8,7 +8,8 @@ submit_predictions(
   submission,
   location = tempdir(),
   tournament = "Nomi",
-  model_id = NULL
+  model_id = NULL,
+  prefix = tournament
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ submit_predictions(
 \item{tournament}{The name of the tournament, Default is Nomi and is not case-sensitive}
 
 \item{model_id}{Target model UUID (required for accounts with multiple models)}
+
+\item{prefix}{The prefix to use for the submission csv file}
 }
 \value{
 The submission id for the submission made

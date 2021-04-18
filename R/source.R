@@ -312,7 +312,7 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
             'mutation register_submission_query {
 					      							createSubmission (filename : "',query_pass$data$submissionUploadAuth$filename,'",
 					      							tournament: ',tournament_id,',
-					      							triggerId: ',trigger_id,',
+					      							triggerId: "',trigger_id,'",
 					      							modelId:"',model_id,'"){id}
 					      						}'
         )
@@ -320,7 +320,7 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
         register_submission_query <- paste0(
             'mutation register_submission_query {
 					      							createSignalsSubmission (filename : "',query_pass$data$submissionUploadSignalsAuth$filename,'",
-					      							triggerId: ',trigger_id,',
+					      							triggerId: "',trigger_id,'",
 					      							modelId:"',model_id,'"){id}
 					      						}'
         )

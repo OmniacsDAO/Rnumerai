@@ -1,6 +1,6 @@
 Package: Rnumerai
 Title: Interface to the Numerai Machine Learning Tournament API
-Version: 2.1.1
+Version: 2.1.2
 Authors@R: c(
     person("Omni Analytics Group", email = "services@omnianalytics.io", role = "aut"),
     person("Eric Hare", email = "eric@omnianalytics.io", role = "cre"))

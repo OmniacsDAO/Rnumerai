@@ -718,7 +718,7 @@ user_performance <- function(user_name="theomniacs")
 	                            MMCRep = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["mmcRep"]]), NA, x[["mmcRep"]])),
 	                            FNCRep = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["fncRep"]]), NA, x[["fncRep"]])),
 	                            Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["rank"]]), NA, x[["rank"]])),
-								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]])),
+								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]]))
   							)
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),

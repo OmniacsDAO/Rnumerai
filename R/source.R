@@ -361,22 +361,11 @@ status_submission_by_id <- function(sub_id)
 										round{
 											number
 										},
-										selected,
-										consistency,
-										concordance {
-											pending
-											value
-										}
+										selected
 									}
 								}'
 							)
 	query_pass <- run_query(query=sub_stat_query)
-
-	## If not evaluated yet
-	if(is.null(query_pass$data$submissions[[1]]$concordance))
-	{
-		return("Not Scored Yet")
-	}
 
 	## If evaluated submission
 	result <- list(
@@ -384,8 +373,6 @@ status_submission_by_id <- function(sub_id)
 					Round_Number = query_pass$data$submissions[[1]]$round$number,
 					Filename = query_pass$data$submissions[[1]]$filename,
 					Selected = query_pass$data$submissions[[1]]$selected,
-					Consistency = query_pass$data$submissions[[1]]$consistency,
-					Concordance = ifelse(!query_pass$data$submissions[[1]]$concordance$pending,query_pass$data$submissions[[1]]$concordance$value,"Pending"),
 					Validation_Correlation = query_pass$data$submissions[[1]]$validationCorrelation,
 					Live_Correlation = query_pass$data$submissions[[1]]$liveCorrelation
 					)
@@ -701,41 +688,37 @@ user_performance <- function(user_name="theomniacs")
 {
 	user_query <- paste0(
 									'query user_query {
-									v2UserProfile(username:"',tolower(user_name),'"){
-										dailyUserPerformances {
-											averageCorrelation
-      										averageCorrelationPayout
-      										date
-      										leaderboardBonus
-      										rank
-      										reputation
-      										stakeValue
-      										tier
-										}
-										dailySubmissionPerformances {
-											correlation
+						         v2UserProfile(username:"',tolower(user_name),'"){
+    										dailyUserPerformances {
+                          corrRep
+                          date
+                          fncRep
+                          mmcRep
+                          payoutPending
+                          payoutSettled
+                          rank
+                          stakeValue
+    										}
+    										dailySubmissionPerformances {
+    											correlation
       										date
       										roundNumber
       										mmc
       										correlationWithMetamodel
       									}
-      									historicalNetNmrEarnings
-      									historicalNetUsdEarnings
-      									netEarnings
       									totalStake
-									}}'
+									  }
+                  }'
 								)
 	query_pass <- run_query(query=user_query)
 
 	user_performance <- data.frame(
-	                            Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances, function(x) ifelse(is.null(x[["date"]]), NA, x[["date"]]) ),
-	                            Tier = sapply(query_pass$data$v2UserProfile$dailyUserPerformances, function(x) ifelse(is.null(x[["tier"]]), NA, x[["tier"]]) ),
-	                            Reputation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["reputation"]]), NA, x[["reputation"]]) ),
-	                            Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["rank"]]), NA, x[["rank"]]) ),
+	                            Date = sapply(query_pass$data$v2UserProfile$dailyUserPerformances, function(x) ifelse(is.null(x[["date"]]), NA, x[["date"]])),
+	                            CORRRep = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["corrRep"]]), NA, x[["corrRep"]])),
+	                            MMCRep = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["mmcRep"]]), NA, x[["mmcRep"]])),
+	                            FNCRep = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["fncRep"]]), NA, x[["fncRep"]])),
+	                            Rank = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,  function(x) ifelse(is.null(x[["rank"]]), NA, x[["rank"]])),
 								NMR_Staked = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["stakeValue"]]),NA,x[["stakeValue"]])),
-								Leaderboard_Bonus = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["leaderboardBonus"]]),NA,x[["leaderboardBonus"]])),
-								Payout_NMR = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelationPayout"]]),NA,x[["averageCorrelationPayout"]])),
-								Average_Daily_Correlation = sapply(query_pass$data$v2UserProfile$dailyUserPerformances,function(x) ifelse(is.null(x[["averageCorrelation"]]),NA,x[["averageCorrelation"]]))
   							)
 	submission_performance <- data.frame(
 								Round_Number = sapply(query_pass$data$v2UserProfile$dailySubmissionPerformances,"[[","roundNumber"),
@@ -782,7 +765,6 @@ user_performance_data <- function(username, dates = NULL, round_aggregate = TRUE
     user_data <- lapply(data, function(x) {
         x$User_Performance %>%
             mutate_if(is.factor, as.character) %>%
-            mutate_at(vars(Reputation:Average_Daily_Correlation), as.numeric) %>%
             mutate(Username = x$Username)
     }) %>%
         bind_rows() %>%

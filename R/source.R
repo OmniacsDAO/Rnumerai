@@ -170,16 +170,13 @@ set_api_key <- function(key) {
 run_query <- function(query, id = get_public_id(), key = get_api_key())
 {
 	## httr's POST call to retrieve results from numerai graphql API
-	raw <- POST(
-					url = "https://api-tournament.numer.ai",
-					body = list(query=query),
-					encode="json",
-					add_headers(
-									Authorization=paste0("Token ",id,"$",key),
-									"Content-type"="application/json",
-									Accept="application/json"
-								)
-	)
+    raw <- POST(
+        url = "https://api-tournament.numer.ai",
+        body = list(query = query),
+        encode = "json",
+        add_headers(Authorization = paste0("Token ", id, "$", key))
+    )
+
 	return(content(raw, "parsed"))
 }
 

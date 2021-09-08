@@ -62,6 +62,11 @@ The submission object should have two columns (id & prediction) only.
 
 -    `submission_id <- submit_predictions(submission,data_dir,tournament="Nomi")`
 
+If you have an account with multiple models you should provide the model_id corresponding to model name you want to make submission against.
+
+-    `get_models()`
+-    `submission_id <- submit_predictions(submission,data_dir,tournament="Nomi",model_id=get_models()[1])`
+
 ### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
 -   `Sys.sleep(10)      ## 10 Seconds wait period`

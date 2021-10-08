@@ -8,6 +8,8 @@ submit_predictions(
   submission,
   location = tempdir(),
   tournament = "Nomi",
+  legacy = TRUE,
+  diagnostics = FALSE,
   model_id = NULL,
   prefix = tournament
 )
@@ -18,6 +20,10 @@ submit_predictions(
 \item{location}{The location in which to store the predictions}
 
 \item{tournament}{The name of the tournament, Default is Nomi and is not case-sensitive}
+
+\item{legacy}{logical; if \code{legacy = FALSE}, submitting on super massive dataset, else submitting on old legacy format.}
+
+\item{diagnostics}{logical; set \code{diagnostics = TRUE} to  to run diagnostics on your upload.}
 
 \item{model_id}{Target model UUID (required for accounts with multiple models)}
 

@@ -194,6 +194,8 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' @import httr
 #' @importFrom utils unzip
 #' @importFrom utils read.csv
+#' @importFrom utils head
+#' @importFrom data.table setDT
 #' @examples
 #' \dontrun{
 #' ## Directory where data files and prediction files to be saved
@@ -204,19 +206,19 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' data <- download_data(data_dir)
 #' data_train <- data$data_train
 #' data_tournament <- data$data_tournament
-#' 
+#'
 #' ## Download super massive dataset for current competition
 #' download(dat_dir, legacy = FALSE)
 #' }
 download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live_only = FALSE)
 {
   tournament_id <- 8
-  
+
   round <- as.numeric(current_round()[1])
-  
+
   if(live_only==TRUE & legacy==TRUE) stop("There is no live only dataset for the legacy data.")
 
-  if(legacy){  
+  if(legacy){
       ## Get download link
       download_link_query <- paste0('{dataset(tournament:',tournament_id,') }')
 
@@ -225,15 +227,15 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
       download_link <- query_pass$data$dataset
 
       message("Downloading Data...\n")
-      
+
       ## Download File
       filename <- file.path(location, paste0("numerai_dataset_", today(), ".zip"))
       result <- httr::GET(download_link, write_disk(filename, overwrite = TRUE))
 
       unzip(filename,overwrite = TRUE,exdir = location, list = FALSE)
       message("Finished downloading data\nReading dataset now...")
-        
-      if(load){  
+
+      if(load){
         ## Read and return the data set
         data_train <- read.csv(file.path(location, "numerai_training_data.csv"))
         data_tournament <- read.csv(file.path(location, "numerai_tournament_data.csv"))
@@ -245,17 +247,17 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
                     "numerai_tournament_data_int8.parquet",
                     "numerai_validation_data_int8.parquet",
                     "example_validation_predictions.parquet",
-                    "example_predictions.parquet", 
+                    "example_predictions.parquet",
                     "old_data_new_val.parquet")
-    
-    
+
+
       if(live_only) file_list = file_list[1]
-      
+
       for(item in file_list){
           message(paste0("Downloading Data...",item))
-	      
+
           if(item== "old_data_new_val.parquet") round <- 280
-          
+
           download_link_query <- paste0('{dataset(filename: "',item,'" , round: ',round,')}')
 
           query_pass <- run_query(query=download_link_query)
@@ -265,19 +267,25 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
           ## Download File
           filename <- file.path(location, item)
           result <- httr::GET(download_link, write_disk(filename, overwrite = TRUE))
-     
+
           if(live_only) end_file <-  head(file_list, 1)  else end_file <- tail(file_list, 1)
-          
+
           if(load && item == end_file){
-              data_live <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[1])))
+              data_live <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[1])))
               if(!live_only){
-                  data_train <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[2])))
-                  data_tournament <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[3])))
-                  data_validation <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[4])))
-                  example_validation_predictions <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[5])))
-                  example_predictions <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[6])))
-                  old_data_new_val <<- data.table::setDT(arrow::read_parquet(file.path(location, file_list[7])))
+                  data_train <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[2])))
+                  data_tournament <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[3])))
+                  data_validation <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[4])))
+                  example_validation_predictions <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[5])))
+                  example_predictions <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[6])))
+                  old_data_new_val <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[7])))
+
+                  return(list(data_live = data_live, data_train = data_train, data_tournament = data_tournament,
+                              data_validation = data_validation, example_validation_predictions = example_validation_predictions,
+                              example_predictions = example_predictions, old_data_new_val = old_data_new_val))
               }
+
+              return(list(data_live = data_live))
           }
       }
   }
@@ -306,27 +314,27 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
 submit_predictions <- function(submission, location = tempdir(), tournament = "Nomi", legacy = TRUE,
                                diagnostics = FALSE, model_id = NULL, prefix = tournament)
 {
-  
+
   if(is.null(model_id)) stop("Must provide a model_id")
-  
+
   ## Read the Trigger ID env variable
   trigger_id = Sys.getenv("TRIGGER_ID")
   if (trigger_id == "") {
     trigger_id = NULL
   }
-  
+
   ## Match tournament ID
   tournament_id <- match(tolower(tournament),tolower(c("NOMI","SIGNALS"))) + 7
   if(is.na(tournament_id)) stop("Tournament Name doesn't match")
-  
+
   if(tournament_id == 8 && !all(names(submission)==c("id","prediction"))) stop("Column names should be id & prediction")
   if(tournament_id == 8 && legacy) version <- 1 else version <- 2
-  
+
   ## Write out the file
   date <- gsub("-","_",Sys.Date())
   submission_filename <- file.path(location, paste0(prefix, "_submission_", date, ".csv"))
   write.csv(submission, submission_filename, row.names = FALSE)
-  
+
   ## Get a slot on AWS for our submission
   if(tournament_id == 8){
     if(!diagnostics){
@@ -349,7 +357,7 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
     								url
     							}
     						}')
-      
+
     }
   } else {
     aws_slot_query <- paste0('query aws_slot_query {
@@ -360,24 +368,24 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
 							}
 						}')
   }
-  
+
   query_pass <- run_query(query=aws_slot_query)
-  
+
   if(tournament_id == 8){
     if(!diagnostics) numerai_aws_url = query_pass$data$submissionUploadAuth$url else numerai_aws_url = query_pass$data$diagnosticsUploadAuth$url
   } else numerai_aws_url = query_pass$data$submissionUploadSignalsAuth$url
 
-  
+
   ## Upload the predictions
   mysubmission <- httr::PUT(
     url = numerai_aws_url,
     body = upload_file(path = submission_filename)
   )
-  
+
   if (mysubmission$status_code != 200) {
     stop(paste0("Uploading submission failed with status code ", mysubmission$status_code))
   }
-  
+
   ## Register our submission and get evaluation for it
   if(tournament_id == 8){
     if(!diagnostics){
@@ -399,7 +407,7 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
 					          							modelId:"',model_id,'"){id}
 					      			    			}'
       )
-      
+
     }
   } else {
     register_submission_query <- paste0(
@@ -411,17 +419,17 @@ submit_predictions <- function(submission, location = tempdir(), tournament = "N
 					      						}'
     )
   }
-  
+
   query_pass <- run_query(query=register_submission_query)
-  
-  if(tournament_id == 8){ 
+
+  if(tournament_id == 8){
     if(!diagnostics) query_id <- query_pass$data$createSubmission$id else query_id <- query_pass$data$createDiagnostics$id
   } else query_id <- query_pass$data$createSignalsSubmission$id
-  
+
   ## If error
   if(!is.null(query_pass$errors[[1]]$message)) stop(query_pass$errors[[1]]$message)
-  
-  
+
+
   ## Return submission id
   if(!diagnostics) message(paste("Submitted Prediction with id", query_id)) else message(paste("Submitted Diagnostics with id", query_id))
   return(query_id)

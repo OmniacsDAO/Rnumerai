@@ -192,6 +192,7 @@ run_query <- function(query, id = get_public_id(), key = get_api_key())
 #' @importFrom lubridate today
 #' @import arrow
 #' @import httr
+#' @import jsonlite
 #' @importFrom utils unzip
 #' @importFrom utils read.csv
 #' @importFrom utils head
@@ -248,6 +249,7 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
                     "numerai_validation_data_int8.parquet",
                     "example_validation_predictions.parquet",
                     "example_predictions.parquet",
+		    "features.json",
                     "old_data_new_val.parquet")
 
 
@@ -278,7 +280,8 @@ download_data <- function(location = tempdir(), legacy = TRUE, load = TRUE, live
                   data_validation <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[4])))
                   example_validation_predictions <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[5])))
                   example_predictions <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[6])))
-                  old_data_new_val <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[7])))
+		  feature_sets <<- jsonlite::fromJSON(file.path(location, file_list[7]))
+                  old_data_new_val <- data.table::setDT(arrow::read_parquet(file.path(location, file_list[8])))
 
                   return(list(data_live = data_live, data_train = data_train, data_tournament = data_tournament,
                               data_validation = data_validation, example_validation_predictions = example_validation_predictions,

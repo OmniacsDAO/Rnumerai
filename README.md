@@ -10,137 +10,281 @@ Using the functions from this package end user can write R code to automate the 
 
 If you encounter a problem or have suggestions, feel free to open an issue.
 
-# Installation
+<hr>
 
-- For the latest stable release: `install.packages("Rnumerai")`
-- For the latest development release: `devtools::install_github("Omni-Analytics-Group/Rnumerai")`
+## Installation
+- For the latest development release: 
+```
+devtools::install_github("Omni-Analytics-Group/Rnumerai")
+```
+- For the latest stable release: 
+```
+install.packages("Rnumerai")
+```
 
-# Automatic submission using this package
 
-### 1. Load the package.
+## Documentation Jump
+- [Basic functions to perform tasks other than automating submissions](https://github.com/Omni-Analytics-Group/Rnumerai#basic-functions-to-perform-tasks-other-than-automating-submissions)
+- [Automatic submission using this package (Main Competition)](https://github.com/Omni-Analytics-Group/Rnumerai#automatic-submission-using-this-package-main-competition)
+- [Automatic submission using this package (Signals Competition)](https://github.com/Omni-Analytics-Group/Rnumerai#automatic-submission-using-this-package-signals-competition)
 
--   `library(Rnumerai)`
+<hr>
 
-### 2. Set working directory where data will be downloaded and submission files would be kept.
+## Basic functions to perform tasks other than automating submissions
 
-- Use current working directory
+#### 1. Load the package.
+```
+library(Rnumerai)
+```
 
-    `data_dir <- getwd()`
-
-- Or use temporary directory
-
-    `data_dir <- tempdir()`
-
-- Or use a user specific directory
-
-    `data_dir <- "~/OAG/numerai"`
-
-### 3. Set Public Key and Secret API key variables.
+#### 2. Set Public Key and Secret API key variables.
 
 Get your public key and api key by going to numer.ai and then going to `Custom API Keys` section under your `Account` Tab. Select appropriate scopes to generate the key or select all scopes to use the full functionality of this package.
+```
+set_public_id("public_id_here")
+set_api_key("api_key_here")
+```
 
--   `set_public_id("public_id_here")`
--   `set_api_key("api_key_here")`
+#### 3. Get all information about your account
+```
+get_account()
+```
 
-Optional: If we choose not to setup the credentials here the terminal will interactively prompt us to type the values when we make an API call.
+#### 3. Get all of your models in Main and Signal Tournament
+-   For Main Tournament
+```
+get_models(tournament=8)
+```
 
-### 4. Download data set for the current round and split it into training data and tournament data 
+-   For Signals Tournament
+```
+get_models(tournament=11)
+```
 
--    `data <- download_data(data_dir)`
--    `data_train <- data$data_train`
--    `data_tournament <- data$data_tournament`
+#### 4. Get number of the current active round.
+```
+get_current_round()
+```
 
-### 5. Generate predictions
+#### 5. Get info on rounds in Main and Signal Tournament
+-   For Main Tournament
+```
+get_competitions(tournament=8)
+```
+-   For Signals Tournament
+```
+get_competitions(tournament=11)
+```
 
-A user can put his/her own custom model code to generate the predictions here. For demonstration purposes, we will generate random predictions.
+#### 6. Set Bio and Link Field for a Model Id
+```
+set_bio(model_id = get_models()[["bayo"]], bio = "This Model Rocks")
+set_link(model_id = get_models()[["bayo"]], link = "https://www.google.com",link_text = "Google")
+```
 
--   `submission <- data.frame(id=data_tournament$id,prediction = sample(seq(.35,.65,by=.1),nrow(data_tournament),replace=TRUE))`
+#### 7. Get all transactions in your wallet.
+```
+wallet_transactions()
+```
 
-### 6. Submit predictions for tournament and get submission id
+#### 8. Set a model's submission webhook used in Numerai Compute.
+```
+set_submission_webhook(model_id = get_models()[["bayo"]], webhook = "..")
+```
 
-The submission object should have two columns (id & prediction) only.
+#### 9. Fetch round's model performance of any user
+-   For Main Tournament
+```
+round_model_performances(username = "bayo",tournament=8)
+```
+-   For Signals Tournament
+```
+round_model_performances(username = "bayo",tournament=11)
+```
 
--    `submission_id <- submit_predictions(submission,data_dir,tournament="Nomi")`
+#### 10. Get Leaderboard
+-   For Main Tournament
+```
+get_leaderboard(tournament=8)
+```
+-   For Signals Tournament
+```
+get_leaderboard(tournament=11)
+```
 
-If you have an account with multiple models you should provide the model_id corresponding to model name you want to make submission against.
+#### 11. Submission status of the last submission associated with the account
+-   For Main Tournament
+```
+model_id = get_models(tournament=8)[["bayo"]]
+submission_status(model_id = model_id, tournament=8)
+```
 
--    `get_models()`
--    `submission_id <- submit_predictions(submission,data_dir,tournament="Nomi",model_id=get_models()[1])`
+-   For Signals Tournament
+```
+model_id = get_models(tournament=11)[["test5678"]]
+submission_status(model_id = model_id, tournament=11)
+```
 
-### 7. Check the status of the submission (Wait for a few seconds to get the submission evaluated)
 
--   `Sys.sleep(10)      ## 10 Seconds wait period`
--   `status_submission_by_id(submission_id)`
-    
-### 8. Stake submission on submission and get transaction hash for it.
+<hr>
 
--   `stake_tx_hash <- stake_nmr(value = 1)`
--   `stake_tx_hash`
 
-### 9. Release Stake and get transaction hash for it.
+## Automatic submission using this package (Main Competition)
 
--   `release_tx_hash <- release_nmr(value = 1)`
--   `release_tx_hash`
+#### 1. Load the package.
+```
+library(Rnumerai)
+```
 
-# Performance functions
+#### 2. Set Public Key and Secret API key variables.
 
-Users can now check performance across the following metrics: `Reputation`, `Rank`, `NMR_Staked`, `Leaderboard_Bonus`, `Payout_NMR`, `Average_Daily_Correlation`, `Round_Correlation`, `MMC`, `Correlation_With_MM`.
+Get your public key and api key by going to numer.ai and then going to `Custom API Keys` section under your `Account` Tab. Select appropriate scopes to generate the key or select all scopes to use the full functionality of this package.
+```
+set_public_id("public_id_here")
+set_api_key("api_key_here")
+```
 
-### 1. Display performance distributions
+#### 3. List the datasets for current round
+```
+list_datasets()
+```
 
-Create histograms of metric performance
 
-- `performance_distribution(c("objectscience"), "Average_Daily_Correlation")`
-- `performance_distribution(c("objectscience"), "MMC")`
+#### 4A. For V2 Data (Released in late 2019), Download Train, Validation and Live data and submit predictions
+-   Download
+```
+download_dataset("v2/numerai_datasets.zip", "numerai_datasets.zip")
+download_dataset("v2/numerai_live_data.parquet", "numerai_live_data.parquet")
+```
+-   Load in R
+```
+unzip("numerai_datasets.zip",overwrite = TRUE, list = FALSE)
+data_train <- read.csv("numerai_training_data.csv")
+data_tournament <- read.csv("numerai_tournament_data.csv")
+data_live <- data.table::setDT(arrow::read_parquet("numerai_live_data.parquet"))
+```
+-   Make Dummy Prediction and submit
+```
+predictions <- data.frame(id=data_live$id,prediction=sample(400:600,nrow(data_live),replace=TRUE)/1000)
+upload_predictions(model_id = get_models()[["bayo"]],df=predictions)
+```
 
-### 2. Display performance over time
+#### 4B. For V3 Data (Released in September of 2021), Download Train, Validation and Live data and submit predictions
+-   Download
+```
+download_dataset("v3/numerai_training_data.parquet", "numerai_training_data.parquet")
+download_dataset("v3/numerai_validation_data.parquet", "numerai_validation_data.parquet")
+download_dataset("v3/numerai_live_data.parquet", "numerai_live_data.parquet")
+download_dataset("v3/numerai_datasets.zip", "numerai_datasets.zip")
+```
+-   Load in R
+```
+data_train <- data.table::setDT(arrow::read_parquet("numerai_training_data.parquet"))
+data_validation <- data.table::setDT(arrow::read_parquet("numerai_validation_data.parquet"))
+data_live <- data.table::setDT(arrow::read_parquet("numerai_live_data.parquet"))
+```
+-   Make Dummy Prediction and submit
+```
+predictions <- data.frame(id=data_live$id,prediction=sample(400:600,nrow(data_live),replace=TRUE)/1000)
+upload_predictions(model_id = get_models()[["bayo"]],df=predictions)
+```
+-   Make Dummy Diagnostics and submit
+```
+diagnostics <- data.frame(id=data_validation$id,prediction=sample(400:600,nrow(data_validation),replace=TRUE)/1000)
+diagnostics_id <- upload_diagnostics(model_id = get_models()[["bayo"]],df=diagnostics)
+diagnostics(model_id = get_models()[["bayo"]],diagnostics_id=diagnostics_id)
+```
 
-Create time series plots of metric performance
+#### 4C. For V4 Data (Released in April of 2022), Download Train, Validation and Live data and submit predictions
+-   Download
+```
+download_dataset("v4/train.parquet", "train.parquet")
+download_dataset("v4/validation.parquet", "validation.parquet")
+download_dataset("v4/live.parquet", "live.parquet")
+download_dataset("v4/live_example_preds.parquet", "live_example_preds.parquet")
+download_dataset("v4/validation_example_preds.parquet", "validation_example_preds.parquet")
+download_dataset("v4/features.json", "features.json")
+```
+-   Load in R
+```
+data_train <- data.table::setDT(arrow::read_parquet("train.parquet"))
+data_validation <- data.table::setDT(arrow::read_parquet("validation.parquet"))
+data_live <- data.table::setDT(arrow::read_parquet("live.parquet"))
+```
+-   Make Dummy Prediction and submit
+```
+predictions <- data.frame(id=data_live$id,prediction=sample(400:600,nrow(data_live),replace=TRUE)/1000)
+upload_predictions(model_id = get_models()[["bayo"]],df=predictions)
+```
+-   Make Dummy Diagnostics and submit
+```
+diagnostic_preds <- data.frame(id=data_validation$id,prediction=sample(400:600,nrow(data_validation),replace=TRUE)/1000)
+diagnostics_id <- upload_diagnostics(model_id = get_models()[["bayo"]],df=diagnostic_preds)
+diagnostics(model_id = get_models()[["bayo"]],diagnostics_id=diagnostics_id)
+```
 
-- `performance_over_time(c("objectscience"), "MMC")`
-- `performance_over_time(c("objectscience", "uuazed", "arbitrage"), "Average_Daily_Correlation", outlier_cutoff = .01, merge = TRUE)`
+#### 5. Change your stake
+-   Increase
+```
+stake_change(nmr=.01,action="increase",model_id = get_models()[["bayo"]])
+```
+-   Decrease
+```
+stake_change(nmr=.01,action="decrease",model_id = get_models()[["bayo"]])
+```
+-   Change Stake Type
+```
+set_stake_type(model_id = get_models()[["bayo"]],corr_multiplier=1,tc_multiplier=2,tournament=8)
+```
 
-### 3. Display performance summary statistics
+<hr>
 
-Create a table of summary statistics
 
-- `summary_statistics(c("objectscience", "uuazed", "arbitrage"))`
+## Automatic submission using this package (Signals Competition)
 
-# Additional functions
+#### 1. Load the package.
+```
+library(Rnumerai)
+```
 
-### 1. Get account information
+#### 2. Set Public Key and Secret API key variables.
+Get your public key and api key by going to numer.ai and then going to `Custom API Keys` section under your `Account` Tab. Select appropriate scopes to generate the key or select all scopes to use the full functionality of this package.
+```
+set_public_id("public_id_here")
+set_api_key("api_key_here")
+```
 
-Get account information for the account whose API key and ID are entered, Check out the name of the return object to see what informations are included in the return and then subset the required information
+#### 3. Download the ticker universe.
+```
+tickers <- ticker_universe()
+```
 
--   `ainfo <- account_info()`
--   `ainfo`
--   `names(ainfo)`
+#### 4. Make Dummy Predictions and submit
+```
+predictions <- cbind(tickers,signal = sample(400:600,nrow(tickers),replace=TRUE)/1000)
+upload_predictions(model_id = get_models(tournament=11)[["test5678"]],df=predictions,tournament=11)
+```
 
-### 2. Get Information for a round
-Get information for a given round number.
-
--   `round_stats(tournament="Nomi",round_number=238)`
-
-### 3. Get current open round
-Get closing time and round number for current open round
-
--   `current_round()`
-
-### 4. Get current leaderboard
-Get V2 Leaderboard
-
--   `leaderboard()`
-
-### 5. Get User Performance
-Get V2 User Profile 
-
--   `user_performance(user_name="theomniacs")`
-
-### 6. Run Custom GraphQL code from R:
-
--   `custom_query <- 'query queryname {
-    					rounds (number:177) {
-    						closeTime
-    					}
-    				}'`
--   `run_query(query=custom_query)$data`
+#### 5. Make Dummy Diagnostics and submit
+```
+download_validation_data(file_path = "signals_historical_targets.csv")
+data_validation <- read.csv("signals_historical_targets.csv")
+data_validation <- data_validation[sample(1:nrow(data_validation),1000),1:3]
+data_validation$data_type <- "validation"
+diagnostic_preds <- cbind(data_validation,signal = sample(400:600,nrow(data_validation),replace=TRUE)/1000)
+diagnostics_id <- upload_diagnostics(model_id = get_models(tournament=11)[["test5678"]],df=diagnostic_preds,tournament=11)
+diagnostics(model_id = get_models(tournament=11)[["test5678"]],tournament=11,diagnostics_id=diagnostics_id)
+```
+#### 6. Change your stake
+-   Increase
+```
+stake_change(nmr=.01,action="increase",tournament=11,model_id = get_models(tournament=11)[["test5678"]])
+```
+-   Decrease
+```
+stake_change(nmr=.01,action="decrease",tournament=11,model_id = get_models(tournament=11)[["test5678"]])
+```
+-   Change Stake Type
+```
+set_stake_type(model_id = get_models(tournament=11)[["test5678"]],corr_multiplier=1,tc_multiplier=2,tournament=11)
+```

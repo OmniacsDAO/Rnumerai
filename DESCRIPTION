@@ -2,8 +2,8 @@ Package: Rnumerai
 Title: Interface to the Numerai Machine Learning Tournament API
 Version: 3.0.0
 Authors@R: c(
-    person("Omni Analytics Group", email = "services@omnianalytics.io", role = "aut"),
-    person("Eric Hare", email = "eric@omnianalytics.io", role = "cre"),
+    person("Omni Analytics Group", email = "lawrence@omnianalytics.org", role = "aut"),
+    person("Eric Hare", email = "eric@omnianalytics.org", role = "cre"),
     person("Yogesh Bansal", email = "yogesh.bansal@live.com", role = "ctb"))
 Description: Routines to interact with the Numerai Machine Learning Tournament
   API <https://numer.ai>. The functionality includes the ability to automatically download the
@@ -15,7 +15,7 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/Omni-Analytics-Group/Rnumerai
 BugReports: https://github.com/Omni-Analytics-Group/Rnumerai/issues
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Imports:
   httr,
   lubridate,

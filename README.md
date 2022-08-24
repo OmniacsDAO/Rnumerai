@@ -1,6 +1,6 @@
 [![Travis-CI Build Status](https://travis-ci.org/Omni-Analytics-Group/Rnumerai.svg?branch=master)](https://travis-ci.org/Omni-Analytics-Group/Rnumerai)
 
-<a href="https://omnianalytics.io" target="_blank"><img src="man/figures/OAG_CLR_web_small.png" align="right"/></a>
+<a href="https://omnianalytics.org" target="_blank"><img src="man/figures/OAG_CLR_web_small.png" align="right"/></a>
 
 # Rnumerai 
 > R Interface to the Numerai Machine Learning Tournament API

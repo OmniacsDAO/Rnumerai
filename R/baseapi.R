@@ -98,6 +98,29 @@ set_api_key <- function(key) {
   return(TRUE)
 }
 
+#' Run a custom query
+#' @param query Query to pass as a string
+#' @param auth Whether the query need authorisation to run
+#' @return Parsed result from custom query
+#'
+#' @export
+#'
+#' @importFrom jsonlite fromJSON
+#'
+#' @examples
+#' \dontrun{
+#' run_query(query = 'query{account{username }}', auth=TRUE)
+#' }
+run_query <- function(query,auth=TRUE) 
+{
+    qcon <- initialize_queries(auth=auth)
+    con <- qcon[[1]]
+    qry <- qcon[[2]]
+    qry$query('custom_query',query)
+
+    result <- fromJSON(con$exec(qry$queries$custom_query))$data
+    return(result)
+}
 
 #' Get all information about your account
 #' @return User information

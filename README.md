@@ -125,6 +125,12 @@ model_id = get_models(tournament=11)[["test5678"]]
 submission_status(model_id = model_id, tournament=11)
 ```
 
+#### 12. Run a custom query
+```
+run_query(query = 'query{account{username}}', auth=TRUE)
+run_query(query = 'query{rounds{number,closeTime}}', auth=TRUE)
+```
+
 
 <hr>
 

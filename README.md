@@ -102,7 +102,27 @@ round_model_performances(username = "bayo",tournament=8)
 round_model_performances(username = "bayo",tournament=11)
 ```
 
-#### 10. Get Leaderboard
+#### 10. Fetch Daily model performance of any user
+-   For Main Tournament
+```
+daily_model_performances(username = "bayo",tournament=8)
+```
+-   For Signals Tournament
+```
+daily_model_performances(username = "bayo",tournament=11)
+```
+
+#### 11. Fetch Daily submission performance of any user
+-   For Main Tournament
+```
+daily_submission_performances(username = "bayo",tournament=8)
+```
+-   For Signals Tournament
+```
+daily_submission_performances(username = "bayo",tournament=11)
+```
+
+#### 12. Get Leaderboard
 -   For Main Tournament
 ```
 get_leaderboard(tournament=8)
@@ -112,7 +132,7 @@ get_leaderboard(tournament=8)
 get_leaderboard(tournament=11)
 ```
 
-#### 11. Submission status of the last submission associated with the account
+#### 13. Submission status of the last submission associated with the account
 -   For Main Tournament
 ```
 model_id = get_models(tournament=8)[["bayo"]]
@@ -125,10 +145,10 @@ model_id = get_models(tournament=11)[["test5678"]]
 submission_status(model_id = model_id, tournament=11)
 ```
 
-#### 12. Run a custom query
+#### 14. Run a custom query
 ```
 run_query(query = 'query{account{username}}', auth=TRUE)
-run_query(query = 'query{rounds{number,closeTime}}', auth=TRUE)
+run_query(query = 'query{rounds{number,closeTime}}', auth=FALSE)
 ```
 
 

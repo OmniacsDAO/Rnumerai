@@ -370,6 +370,98 @@ initialize_queries <- function(auth=FALSE)
 
 
     ##################################################################
+    ## Fetch Daily Model performance of a user
+    ##################################################################
+    qry$query(
+        'daily_model_performances_main',
+        'query($username: String!) {
+            v3UserProfile(modelName: $username) {
+              dailyModelPerformances {
+                date
+                corrRep
+                corrRank
+                mmcRep
+                mmcRank
+                fncRep
+                fncRank
+                fncV3Rep
+                fncV3Rank
+                tcRep
+                tcRank
+              }
+            }
+          }'
+    )
+    qry$query(
+        'daily_model_performances_signal',
+        'query($username: String!) {
+            v2SignalsProfile(modelName: $username) {
+              dailyModelPerformances {
+                date
+                corrRank
+                corrRep
+                mmcRep
+                mmcRank
+                corr20dRep
+                corr20dRank
+                icRep
+                icRank
+                mmc20dRep
+                mmc20dRank
+              }
+            }
+          }'
+    )
+    ##################################################################
+    ##################################################################
+
+
+    ##################################################################
+    ## Fetch Daily Submission performance of a user
+    ##################################################################
+    qry$query(
+        'daily_submission_performances_main',
+        'query($username: String!) {
+            v2UserProfile(username: $username) {
+              dailySubmissionPerformances {
+                date
+                correlation
+                corrPercentile
+                roundNumber
+                mmc
+                mmcPercentile
+                fnc
+                fncPercentile
+                tc
+                tcPercentile
+                correlationWithMetamodel
+              }
+            }
+          }'
+    )
+    qry$query(
+        'daily_submission_performances_signal',
+        'query($username: String!) {
+            signalsUserProfile(username: $username) {
+              dailySubmissionPerformances {
+                date
+                returns
+                submissionTime
+                correlation
+                mmc
+                roundNumber
+                corrRep
+                mmcRep
+                ic
+              }
+            }
+          }'
+    )
+    ##################################################################
+    ##################################################################
+
+
+    ##################################################################
     ## Change stake by `value` NMR.
     ##################################################################
     qry$query(

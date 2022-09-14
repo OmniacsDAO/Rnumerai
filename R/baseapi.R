@@ -445,6 +445,57 @@ round_model_performances <- function(username,tournament=8)
     return(result)
 }
 
+#' Fetch Daily performance of any user
+#' @param username User Name
+#' @param tournament Tournament ID, 8 for Main, 11 for Signal
+#' @return list of round model performance entries
+#'
+#' @export
+#'
+#' @importFrom jsonlite fromJSON
+#' @import lubridate
+#'
+#' @examples
+#' \dontrun{
+#' daily_model_performances(username = "bayo")
+#' }
+daily_model_performances <- function(username,tournament=8) 
+{
+    qcon <- initialize_queries(auth=FALSE)
+    con <- qcon[[1]]
+    qry <- qcon[[2]]
+    if(tournament==8) result <- fromJSON(con$exec(qry$queries$daily_model_performances_main,list(username = username)))$data$v3UserProfile$dailyModelPerformances
+    if(tournament==11) result <- fromJSON(con$exec(qry$queries$daily_model_performances_signal,list(username = username)))$data$v2SignalsProfile$dailyModelPerformances
+    result$date <- as_datetime(result$date)
+    return(result)
+}
+
+
+#' Fetch Daily Submission Performance of any user
+#' @param username User Name
+#' @param tournament Tournament ID, 8 for Main, 11 for Signal
+#' @return list of round model performance entries
+#'
+#' @export
+#'
+#' @importFrom jsonlite fromJSON
+#' @import lubridate
+#'
+#' @examples
+#' \dontrun{
+#' daily_submission_performances(username = "bayo")
+#' }
+daily_submission_performances <- function(username,tournament=8) 
+{
+    qcon <- initialize_queries(auth=FALSE)
+    con <- qcon[[1]]
+    qry <- qcon[[2]]
+    if(tournament==8) result <- fromJSON(con$exec(qry$queries$daily_submission_performances_main,list(username = username)))$data$v2UserProfile$dailySubmissionPerformances
+    if(tournament==11) result <- fromJSON(con$exec(qry$queries$daily_submission_performances_signal,list(username = username)))$data$signalsUserProfile$dailySubmissionPerformances
+    result$date <- as_datetime(result$date)
+    return(result)
+}
+
 
 #' Change stake by `value` NMR
 #' @param nmr amount of NMR you want to increase/decrease
